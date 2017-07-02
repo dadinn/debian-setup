@@ -1,8 +1,8 @@
 #!/bin/sh
 
-RELEASE=stretch
-MIRROR=http://ftp.uk.debian.org/debian
-INSTROOT=/mnt/instroot
+RELEASE=${RELEASE:-stretch}
+MIRROR=${MIRROR:-http://ftp.uk.debian.org/debian}
+INSTROOT=${INSTROOT:-/mnt/instroot}
 
 usage () {
     cat <<EOF
@@ -24,6 +24,12 @@ Debian mirror URL to install from (default $MIRROR)
 -n HOSTNAME
 Hostname for new system
 
+-k KEYMAP
+Keymap to be used for keyboard layout (default dvorak)
+
+-l LOCALE
+locale to be used (default en_US.UTF8)
+
 -t PATH
 Installation target as root directory (default $INSTROOT)
 
@@ -38,7 +44,7 @@ then
     exit 1
 fi
 
-while getopts 'r:m:n:t:h' opt
+while getopts 'r:m:n:k:l:t:h' opt
 do
     case $opt in
 	r)
@@ -49,6 +55,12 @@ do
 	    ;;
 	n)
 	    HOSTNAME=$OPTARG
+	    ;;
+	k)
+	    KEYMAP=$OPTARG
+	    ;;
+	l)
+	    LAYOUT=$OPTARG
 	    ;;
 	t)
 	    INSTROOT=$OPTARG
@@ -88,3 +100,14 @@ fi
 
 apt install -y debootstrap
 debootstrap $RELEASE $INSTROOT $MIRROR
+echo $HOSTNAME > /etc/hostname
+cp ./debconf.sh ${INSTROOT}
+
+for i in dev sys proc
+do
+    mkdir ${INSTROOT}/$i
+    mount --bind /$i ${INSTROOT}/$i
+done
+
+LANG=C.UTF-8 chroot ${INSTROOT} /debconf.sh
+umount ${INSTROOT}/{dev,sys,proc}
