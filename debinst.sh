@@ -1,8 +1,8 @@
 #!/bin/sh
 
-RELEASE=jessie
+RELEASE=stretch
 MIRROR=http://ftp.uk.debian.org/debian
-INSTROOT=/mnt/inst_root
+INSTROOT=/mnt/instroot
 
 usage () {
     cat <<EOF
@@ -31,6 +31,12 @@ Installation target as root directory (default $INSTROOT)
 This usage help...
 EOF
 }
+
+if [ $(id -u) -ne 0 ]
+then
+    echo "This script must be run as root!" >&2
+    exit 1
+fi
 
 while getopts 'r:m:n:t:h' opt
 do
@@ -66,11 +72,7 @@ do
     esac
 done
 
-if [ $(id -u) -ne 0 ]
-then
-    echo "This script must be run as root!" >&2
-    exit 1
-fi
+shift $(($OPTIND - 1))
 
 if [ -z "$INSTROOT" -o ! -d "$INSTROOT" ]
 then
