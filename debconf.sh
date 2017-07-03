@@ -105,6 +105,12 @@ Set name for ZFS pool to be used
 EOF
 }
 
+if [ ! -e /CONFIG_ME ]
+then
+    echo "ERROR: this script should be only run on a freshly install Debian system" >&2
+    exit 1
+fi
+
 if [ $(id -u) -ne 0 ]
 then
     exit 1

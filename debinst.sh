@@ -100,6 +100,7 @@ fi
 
 apt install -y debootstrap
 debootstrap $RELEASE $INSTROOT $MIRROR
+touch $INSTROOT/CONFIG_ME
 echo $HOSTNAME > /etc/hostname
 cp ./debconf.sh ${INSTROOT}
 
