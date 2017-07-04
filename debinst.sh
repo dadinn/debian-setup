@@ -100,15 +100,18 @@ fi
 
 apt install -y debootstrap
 debootstrap $RELEASE $INSTROOT $MIRROR
-touch $INSTROOT/CONFIG_ME
 echo $HOSTNAME > /etc/hostname
 cp ./debconf.sh ${INSTROOT}
 
 for i in dev sys proc
 do
-    mkdir ${INSTROOT}/$i
-    mount --bind /$i ${INSTROOT}/$i
+    [ -e $INSTROOT/$i ] || mkdir $INSTROOT/$i
+    mount --bind /$i $INSTROOT/$i
 done
 
-LANG=C.UTF-8 chroot ${INSTROOT} /debconf.sh
-umount ${INSTROOT}/{dev,sys,proc}
+touch $INSTROOT/CONFIG_ME
+LANG=C.UTF-8 chroot $INSTROOT /debconf.sh
+
+for i in dev sys proc
+do umount $INSTROOT/$i; done
+echo "Finished with Debian installation!"
