@@ -25,7 +25,14 @@ init_sudouser () {
 }
 
 install_zfs () {
-    RELEASE=$(cat /etc/debian_version | sed -e 's;^\([0-9][0-9]*\)\..*$;\1;')
+    if [ $# -eq 0 ]
+    then
+	RELEASE=$(cat /etc/debian_version | sed -e 's;^\([0-9][0-9]*\)\..*$;\1;')
+    else
+	echo "ERROR: called install_zfs with $# args: $@" >&2
+	exit 1
+    fi
+
     case $RELEASE in
 	"8")
 	    echo /etc/apt/sources.list | grep -E '^deb .* jessie main$' | sed -e 's/jessie main/jessie-backports main contrib/' > /etc/apt/sourced.list.d/backports.list
@@ -54,27 +61,7 @@ install_grub () {
     update-grub
 }
 
-function install-zfs {
-    read -p "Install ZFS tools & kernel modules? [y/N]" zfs
-    case $zfs in
-	[yY])
-	    echo "Installing ZFS tools & kernel modules..."
-	    sources-backports
-	    apt install -y -t $RELEASE-backports linux-headers-$(uname -r)
-	    apt install -y -t $RELEASE-backports zfs-dkms zfs-initramfs
-	    echo "Finished installing ZFS tools & kernel modules!"
-	    echo 'INSTALL_ZFS=1' >> $STATEFILE
-	    system-reboot
-	    ;;
-	*)
-	    echo "Skipping ZFS tools & kernel modules"
-	    echo 'INSTALL_ZFS=2' >> $STATEFILE
-	    ;;
-    esac
-}
-
 LOCALE=${LOCALE:-en_US.UTF-8}
-ZPOOL=""
 
 usage () {
     cat <<EOF
@@ -165,7 +152,11 @@ apt install -y lsb-release gdisk cryptsetup sudo
 
 init_sudouser $SUDOUSER
 
-if [ ! -z "$ZPOOL" ] && install_zfs
+if [ ! -z "$ZPOOL" ]
+then
+    install_zfs
+fi
+
 install_grub
 
 echo "Finished configuring Debian system!"
