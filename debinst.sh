@@ -1,6 +1,7 @@
 #!/bin/sh
 
 RELEASE=${RELEASE:-stretch}
+ARCH=${ARCH:-amd64}
 MIRROR=${MIRROR:-http://ftp.uk.debian.org/debian}
 INSTROOT=${INSTROOT:-/mnt/instroot}
 
@@ -17,6 +18,9 @@ Valid options are:
 
 -r RELEASE
 Debian release to install (default $RELEASE)
+
+-a ARCH
+The target architecture of the new system. Has to be of either amd64, arm64, armel, armhf, i368, mips, mips64el, mipsel, powerpc, ppc64el, s390x (default $ARCH)
 
 -m URL
 Debian mirror URL to install from (default $MIRROR)
@@ -47,6 +51,15 @@ fi
 while getopts 'r:m:n:k:l:t:h' opt
 do
     case $opt in
+	a)
+	    case $OPTARG in
+		amd64|arm64|armel|armhf|i368|mips|mips64el|mipsel|powerpc|ppc64el|s390x)
+		    ARCH=$OPTARG
+		    ;;
+		*)
+		    echo "ERROR: invalid architecture $OPTARG" >&2
+		    exit 1
+		    ;;
 	r)
 	    RELEASE=$OPTARG
 	    ;;
@@ -99,7 +112,7 @@ then
 fi
 
 apt install -y debootstrap
-debootstrap $RELEASE $INSTROOT $MIRROR
+debootstrap --arch $ARCH $RELEASE $INSTROOT $MIRROR
 echo $HOSTNAME > $INSTROOT/etc/hostname
 cp ./debconf.sh ${INSTROOT}
 

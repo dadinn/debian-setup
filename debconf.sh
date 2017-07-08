@@ -73,7 +73,6 @@ function install-zfs {
     esac
 }
 
-ARCH=${ARCH:-amd64}
 LOCALE=${LOCALE:-en_US.UTF-8}
 ZPOOL=""
 
@@ -87,9 +86,6 @@ USAGE:
 $0 [OPTIONS]
 
 Valid options are:
-
--a ARCH
-Choose architecture of the new installation (default $ARCH)
 
 -l LOCALE
 
@@ -119,9 +115,6 @@ fi
 while getopts 'a:l:n:s:z:h' opt
 do
     case $opt in
-	a)
-	    ARCH=$OPTARG
-	    ;;
 	l)
 	    LOCALE=$OPTARG
 	    ;;
