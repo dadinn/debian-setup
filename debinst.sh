@@ -60,6 +60,8 @@ do
 		    echo "ERROR: invalid architecture $OPTARG" >&2
 		    exit 1
 		    ;;
+	    esac
+	    ;;
 	r)
 	    RELEASE=$OPTARG
 	    ;;
