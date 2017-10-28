@@ -25,20 +25,12 @@ The target architecture of the new system. Has to be of either amd64, arm64, arm
 -m URL
 Debian mirror URL to install from (default $MIRROR)
 
--n HOSTNAME
-Hostname for new system
-
--k KEYMAP
-Keymap to be used for keyboard layout (default dvorak)
-
--l LOCALE
-locale to be used (default en_US.UTF8)
-
 -t PATH
 Installation target as root directory (default $INSTROOT)
 
 -h
 This usage help...
+
 EOF
 }
 
@@ -48,7 +40,7 @@ then
     exit 1
 fi
 
-while getopts 'r:m:n:k:l:t:h' opt
+while getopts 'a:r:m:t:h' opt
 do
     case $opt in
 	a)
@@ -67,15 +59,6 @@ do
 	    ;;
 	m)
 	    MIRROR=$OPTARG
-	    ;;
-	n)
-	    HOSTNAME=$OPTARG
-	    ;;
-	k)
-	    KEYMAP=$OPTARG
-	    ;;
-	l)
-	    LAYOUT=$OPTARG
 	    ;;
 	t)
 	    INSTROOT=$OPTARG
@@ -107,15 +90,8 @@ then
     exit 1
 fi
 
-if [ -z "$HOSTNAME" -o -z "$(echo $HOSTNAME | grep -E '^[[:alpha:]][[:alnum:]-]+$')" ]
-then
-    echo "ERROR: Hostname has to be specified for the new system" >&2
-    exit 1
-fi
-
 apt install -y debootstrap
 debootstrap --arch $ARCH $RELEASE $INSTROOT $MIRROR
-echo $HOSTNAME > $INSTROOT/etc/hostname
 cp ./debconf.sh ${INSTROOT}
 
 for i in dev sys proc

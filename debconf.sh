@@ -62,6 +62,7 @@ install_grub () {
 }
 
 LOCALE=${LOCALE:-en_US.UTF-8}
+KEYMAP=${KEYMAP:-dvorak}
 
 usage () {
     cat <<EOF
@@ -75,15 +76,22 @@ $0 [OPTIONS]
 Valid options are:
 
 -l LOCALE
-
 Set system locale to use (default $LOCALE)
 
--s USER
+-k KEYMAP
+Keymap to be used for keyboard layout (default $KEYMAP)
 
+-n HOSTNAME
+Hostname for the new system
+
+-s USER
 Name for sudo user instead of root
 
 -z POOL
 Set name for ZFS pool to be used
+
+-h
+This usage help...
 
 EOF
 }
@@ -99,11 +107,14 @@ then
     exit 1
 fi
 
-while getopts 'a:l:n:s:z:h' opt
+while getopts 'l:k:n:s:z:h' opt
 do
     case $opt in
 	l)
 	    LOCALE=$OPTARG
+	    ;;
+	k)
+	    KEYMAP=$OPTARG
 	    ;;
 	n)
 	    HOSTNAME=$OPTARG
@@ -140,6 +151,14 @@ then
     echo "ERROR: sudo user must be specified!" >&2
     exit 1
 fi
+
+if [ -z "$HOSTNAME" -o -z "$(echo $HOSTNAME | grep -E '^[[:alpha:]][[:alnum:]-]+$')" ]
+then
+    echo "ERROR: Hostname has to be specified for the new system" >&2
+    exit 1
+fi
+
+echo $HOSTNAME > /etc/hostname
 
 init_apt
 apt update
