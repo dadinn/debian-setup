@@ -96,17 +96,6 @@ This usage help...
 EOF
 }
 
-if [ ! -e /CONFIG_ME ]
-then
-    echo "ERROR: this script should be only run on a freshly install Debian system" >&2
-    exit 1
-fi
-
-if [ $(id -u) -ne 0 ]
-then
-    exit 1
-fi
-
 while getopts 'l:k:n:s:z:h' opt
 do
     case $opt in
@@ -130,21 +119,27 @@ do
 	    exit 0
 	    ;;
 	:)
-	    echo "ERROR: Missing argument for potion: -$OPTARG" >&2
 	    exit 1
 	    ;;
 	\?)
-	    echo "ERROR: Illegal option -$OPTARG" >&2
-	    exit 1
-	    ;;
-	*)
-	    usage
 	    exit 1
 	    ;;
     esac
 done
 
 shift $(($OPTIND - 1))
+
+if [ $(id -u) -ne 0 ]
+then
+    echo "ERROR: This script must be run as root!" >&2
+    exit 1
+fi
+
+if [ ! -e /CONFIG_ME ]
+then
+    echo "ERROR: This script should be only run on a freshly install Debian system!" >&2
+    exit 1
+fi
 
 if [ -z "$SUDOUSER" ]
 then

@@ -34,12 +34,6 @@ This usage help...
 EOF
 }
 
-if [ $(id -u) -ne 0 ]
-then
-    echo "This script must be run as root!" >&2
-    exit 1
-fi
-
 while getopts 'a:r:m:t:h' opt
 do
     case $opt in
@@ -68,21 +62,21 @@ do
             exit 0
 	    ;;
 	:)
-	    echo "ERROR: Missing argument for potion: -$OPTARG" >&2
 	    exit 1
 	    ;;
 	\?)
-	    echo "ERROR: Illegal option -$OPTARG" >&2
-	    exit 1
-	    ;;
-	*)
-	    usage
 	    exit 1
 	    ;;
     esac
 done
 
 shift $(($OPTIND - 1))
+
+if [ $(id -u) -ne 0 ]
+then
+    echo "This script must be run as root!" >&2
+    exit 1
+fi
 
 if [ -z "$INSTROOT" -o ! -d "$INSTROOT" ]
 then
