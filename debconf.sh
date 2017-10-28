@@ -17,7 +17,7 @@ init_sudouser () {
 	SUDOUSER=$1
     else
 	echo "called init_sudouser with $# args: $@" >&2
-	exit1
+	exit 1
     fi
     useradd -m -G sudo $SUDOUSER
     passwd $SUDOUSER
