@@ -90,6 +90,9 @@ Name for sudo user instead of root
 -z POOL
 Set name for ZFS pool to be used
 
+-f
+Force run configuration script
+
 -h
 This usage help...
 
@@ -114,6 +117,9 @@ do
 	z)
 	    ZPOOL=$OPTARG
 	    ;;
+	f)
+	    FORCE_RUN=1
+	    ;;
 	h)
 	    usage
 	    exit 0
@@ -135,9 +141,9 @@ then
     exit 1
 fi
 
-if [ ! -e /CONFIG_ME ]
+if [ ! -e /CONFIG_ME -a ${FORCE_RUN:-0} -lt 1 ]
 then
-    echo "ERROR: This script should be only run on a freshly install Debian system!" >&2
+    echo "ERROR: This script should be only run on a freshly bootstrapped Debian system! (Use force option to continue anyway)" >&2
     exit 1
 fi
 
