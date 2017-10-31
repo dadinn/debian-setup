@@ -49,13 +49,16 @@ Debian mirror URL to install from (default $MIRROR)
 -t PATH
 Installation target as root directory (default $INSTROOT)
 
+-C
+Skip bootstrapping new system, and only setup chroot environment into target root directory
+
 -h
 This usage help...
 
 EOF
 }
 
-while getopts 'a:r:m:t:h' opt
+while getopts 'a:r:m:t:Ch' opt
 do
     case $opt in
 	a)
@@ -78,6 +81,8 @@ do
 	t)
 	    INSTROOT=$OPTARG
 	    ;;
+	C)
+	    CONFIG_ONLY=1
 	h)
             usage
             exit 0
@@ -105,7 +110,10 @@ then
     exit 1
 fi
 
-bootstrap $INSTROOT $ARCH $RELEASE $MIRROR
+if [ ${CONFIG_ONLY:-0} -lt 1 ]
+then
+    bootstrap $INSTROOT $ARCH $RELEASE $MIRROR
+fi
 
 cp ./debconf.sh ${INSTROOT}
 
@@ -116,7 +124,12 @@ do
 done
 
 touch $INSTROOT/CONFIG_ME
-LANG=C.UTF-8 chroot $INSTROOT /debconf.sh
+if [ ${CONFIG_ONLY:-0} -lt 1 ]
+then
+    LANG=C.UTF-8 chroot $INSTROOT /debconf.sh
+else
+    LANG=C.UTF-8 chroot $INSTROOT /bin/bash
+fi
 
 for i in dev sys proc
 do umount $INSTROOT/$i; done
