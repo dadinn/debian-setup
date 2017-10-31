@@ -21,7 +21,25 @@ configure_locale () {
 }
 
 configure_timezone () {
-    dpkg-reconfigure tzdata
+    if [ $# -eq 1 ]
+    then
+	local TIMEZONE=$1
+    else
+	echo "ERROR: called configure_timezone with $# args: $@" >&2
+	exit 1
+    fi
+
+    ZONEFILE="/usr/share/zoneinfo/$TIMEZONE"
+
+    if [ ! -e $ZONEFILE ]
+    then
+	echo "ERROR: /usr/share/zoneinfo/$TIMEZONE does not exist!" >&2
+	exit 1
+    fi
+
+    apt install -y tzdata
+    ln -sf $ZONEFILE /etc/localtime
+    dpkg-reconfigure -f noninteractive tzdata
 }
 
 init_sudouser () {
@@ -76,6 +94,7 @@ install_grub () {
 
 LOCALE=${LOCALE:-en_US.UTF-8}
 KEYMAP=${KEYMAP:-dvorak}
+TIMEZONE="Europe/London"
 
 usage () {
     cat <<EOF
@@ -93,6 +112,9 @@ Set system locale to use (default $LOCALE)
 
 -k KEYMAP
 Keymap to be used for keyboard layout (default $KEYMAP)
+
+-t TIMEZONE
+Timezone to be used (default $TIMEZONE)
 
 -n HOSTNAME
 Hostname for the new system
@@ -112,7 +134,7 @@ This usage help...
 EOF
 }
 
-while getopts 'l:k:n:s:z:h' opt
+while getopts 'l:k:t:n:s:z:h' opt
 do
     case $opt in
 	l)
@@ -120,6 +142,9 @@ do
 	    ;;
 	k)
 	    KEYMAP=$OPTARG
+	    ;;
+	t)
+	    TIMEZONE=$OPTARG
 	    ;;
 	n)
 	    HOSTNAME=$OPTARG
@@ -178,7 +203,7 @@ init_apt
 apt update
 apt full-upgrade -y
 configure_locale $LOCALE
-configure_timezone
+configure_timezone $TIMEZONE
 apt install -y console-setup
 apt install -y lsb-release gdisk cryptsetup sudo
 
