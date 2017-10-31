@@ -7,6 +7,19 @@ APT::Get::Install-Suggests "false";
 EOF
 }
 
+configure_locale () {
+    if [ $# -eq 1 ]
+    then
+	local LOCALE=$1
+    else
+	echo "called init_locales with $# args: $@" >&2
+	exit 1
+    fi
+
+    apt install -y locales
+    locale-gen $LOCALE
+}
+
 configure_timezone () {
     dpkg-reconfigure tzdata
 }
@@ -164,8 +177,7 @@ echo $HOSTNAME > /etc/hostname
 init_apt
 apt update
 apt full-upgrade -y
-apt install -y locales
-locale-gen $LOCALE
+configure_locale $LOCALE
 configure_timezone
 apt install -y console-setup
 apt install -y lsb-release gdisk cryptsetup sudo
