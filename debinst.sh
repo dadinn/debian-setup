@@ -5,6 +5,27 @@ ARCH=${ARCH:-amd64}
 MIRROR=${MIRROR:-http://ftp.uk.debian.org/debian}
 INSTROOT=${INSTROOT:-/mnt/instroot}
 
+bootstrap () {
+    if [ $# -eq 3 ]
+    then
+	local INSTROOT=$1
+	local ARCH=$2
+	local RELEASE=$3
+	local MIRROR=$4
+    else
+	echo "ERROR: calling bootstrap with $# args: $@" >&2
+	exit 1
+    fi
+
+    if ! type debootstrap 2>&1 > /dev/null
+    then
+	apt install -y debootstrap
+    fi
+
+    echo "Bootstrapping Debian release $RELEASE archictecture $ARCH..."
+    debootstrap --arch $ARCH --include lsb-release $RELEASE $INSTROOT $MIRROR
+}
+
 usage () {
     cat <<EOF
 
@@ -84,8 +105,8 @@ then
     exit 1
 fi
 
-apt install -y debootstrap
-debootstrap --arch $ARCH $RELEASE $INSTROOT $MIRROR
+bootstrap $INSTROOT $ARCH $RELEASE $MIRROR
+
 cp ./debconf.sh ${INSTROOT}
 
 for i in dev sys proc
