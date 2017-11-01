@@ -50,6 +50,8 @@ init_sudouser () {
 	echo "called init_sudouser with $# args: $@" >&2
 	exit 1
     fi
+
+    apt install -y sudo
     useradd -m -G sudo $SUDOUSER
     passwd $SUDOUSER
     passwd -l root
@@ -221,7 +223,11 @@ configure_locale $LOCALE
 configure_timezone $TIMEZONE
 apt install -y console-setup
 
-init_sudouser $SUDOUSER
+
+if [ ! -z "$SUDOUSER" ]
+then
+    init_sudouser $SUDOUSER
+fi
 
 if [ ! -z "$ZPOOL" ]
 then
