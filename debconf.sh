@@ -85,10 +85,19 @@ install_zfs () {
 }
 
 install_grub () {
-    [ $# -eq 1 ] && ROOTDEV="$1"
-    [ ! -b $ROOTDEV ] && echo "Not a block device: $ROOTDEV" && exit 1 >&2
-    apt install -y grub-pc
+    if [ $# -eq 1 ]
+    then
+	local ROOTDEV="$1"
+    else
+	echo "called install_grub with $# arguments: $@" >&2
+	exit 1
+    fi
+
+    apt install -y grub-pc cryptsetup
+    echo 'GRUB_CRYPTODISK_ENABLE=y' >> /etc/default/grub
+    echo 'GRUB_PRELOAD_MODULES="lvm cryptodisk"' >> /etc/default/grub
     grub-install $ROOTDEV
+    update-initramfs -k all -u
     update-grub
 }
 
@@ -211,7 +220,6 @@ apt full-upgrade -y
 configure_locale $LOCALE
 configure_timezone $TIMEZONE
 apt install -y console-setup
-apt install -y lsb-release gdisk cryptsetup sudo
 
 init_sudouser $SUDOUSER
 
@@ -220,6 +228,6 @@ then
     install_zfs
 fi
 
-install_grub
+install_grub $ROOT_DEV
 
 echo "Finished configuring Debian system!"
