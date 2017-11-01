@@ -122,6 +122,9 @@ Hostname for the new system
 -s USER
 Name for sudo user instead of root
 
+-r PATH
+Device with root and boot partitions
+
 -z POOL
 Set name for ZFS pool to be used
 
@@ -134,7 +137,7 @@ This usage help...
 EOF
 }
 
-while getopts 'l:k:t:n:s:z:h' opt
+while getopts 'l:k:t:n:s:r:z:h' opt
 do
     case $opt in
 	l)
@@ -151,6 +154,9 @@ do
 	    ;;
 	s)
 	    SUDOUSER=$OPTARG
+	    ;;
+	r)
+	    ROOT_DEV=$OPTARG
 	    ;;
 	z)
 	    ZPOOL=$OPTARG
@@ -185,9 +191,9 @@ then
     exit 1
 fi
 
-if [ -z "$SUDOUSER" ]
+if [ -z "$ROOT_DEV" -o ! -b $ROOTDEV ]
 then
-    echo "ERROR: sudo user must be specified!" >&2
+    echo "ERROR: $ROOT_DEV is not a block device!" >&2
     exit 1
 fi
 
