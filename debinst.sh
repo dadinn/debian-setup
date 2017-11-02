@@ -6,7 +6,7 @@ MIRROR=${MIRROR:-http://ftp.uk.debian.org/debian}
 INSTROOT=${INSTROOT:-/mnt/instroot}
 
 bootstrap () {
-    if [ $# -eq 3 ]
+    if [ $# -eq 4 ]
     then
 	local INSTROOT=$1
 	local ARCH=$2
