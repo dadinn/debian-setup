@@ -83,6 +83,7 @@ do
 	    ;;
 	C)
 	    CONFIG_ONLY=1
+	    ;;
 	h)
             usage
             exit 0
