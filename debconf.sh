@@ -202,7 +202,11 @@ then
     exit 1
 fi
 
-if [ -z "$ROOT_DEV" -o ! -b $ROOTDEV ]
+if [ -z "$ROOT_DEV" ]
+then
+    echo "ERROR: root device has to be specified for GRUB!" >&2
+    exit 1
+elif [ ! -b "$ROOT_DEV" ]
 then
     echo "ERROR: $ROOT_DEV is not a block device!" >&2
     exit 1
