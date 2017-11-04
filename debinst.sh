@@ -31,9 +31,9 @@ usage () {
 
 USAGE:
 
-$0 [OPTIONS]
+$0 [OPTIONS] COMMAND...
 
-Installs Debian
+Bootstraps Debian in target directory, then chroots into it and executes COMMAND while in the freshly bootstrapped Debian environment. Also places configuration script debconf.sh in the target directory to help with automating the configuration.
 
 Valid options are:
 
@@ -49,8 +49,8 @@ Debian mirror URL to install from (default $MIRROR)
 -t PATH
 Installation target as root directory (default $INSTROOT)
 
--C
-Skip bootstrapping new system, and only setup chroot environment into target root directory
+-X
+Skip bootstrapping new system, and only execute command in chroot environment (default /bin/bash)
 
 -h
 This usage help...
@@ -58,7 +58,7 @@ This usage help...
 EOF
 }
 
-while getopts 'a:r:m:t:Ch' opt
+while getopts 'a:r:m:t:Xh' opt
 do
     case $opt in
 	a)
@@ -81,8 +81,8 @@ do
 	t)
 	    INSTROOT=$OPTARG
 	    ;;
-	C)
-	    CONFIG_ONLY=1
+	X)
+	    EXECUTE_ONLY=1
 	    ;;
 	h)
             usage
@@ -99,6 +99,12 @@ done
 
 shift $(($OPTIND - 1))
 
+CHROOT_COMMAND="$@"
+if [ -z "$CHROOT_COMMAND" ]
+then
+    CHROOT_COMMAND="/bin/bash"
+fi
+
 if [ $(id -u) -ne 0 ]
 then
     echo "This script must be run as root!" >&2
@@ -111,12 +117,13 @@ then
     exit 1
 fi
 
-if [ ${CONFIG_ONLY:-0} -lt 1 ]
+if [ ${EXECUTE_ONLY:-0} -ne 1 ]
 then
     bootstrap $INSTROOT $ARCH $RELEASE $MIRROR
 fi
 
 cp ./debconf.sh ${INSTROOT}
+touch $INSTROOT/CONFIG_ME
 
 for i in dev sys proc
 do
@@ -124,13 +131,8 @@ do
     mount --bind /$i $INSTROOT/$i
 done
 
-touch $INSTROOT/CONFIG_ME
-if [ ${CONFIG_ONLY:-0} -lt 1 ]
-then
-    LANG=C.UTF-8 chroot $INSTROOT /debconf.sh
-else
-    LANG=C.UTF-8 chroot $INSTROOT /bin/bash
-fi
+echo "Executing chroot command: $CHROOT_COMMAND"
+LANG=C.UTF-8 chroot $INSTROOT $CHROOT_COMMAND
 
 for i in dev sys proc
 do umount $INSTROOT/$i; done
