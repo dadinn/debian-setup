@@ -33,7 +33,9 @@ USAGE:
 
 $0 [OPTIONS] COMMAND...
 
-Bootstraps Debian in target directory, then chroots into it and executes COMMAND while in the freshly bootstrapped Debian environment. Also places configuration script debconf.sh in the target directory to help with automating the configuration.
+Bootstraps Debian in target directory, then chroots into it and executes COMMAND in the freshly bootstrapped Debian environment.
+
+Also places configuration script debconf.sh in the target directory to help with automating the configuration.
 
 Valid options are:
 
@@ -50,7 +52,7 @@ Debian mirror URL to install from (default $MIRROR)
 Installation target as root directory (default $INSTROOT)
 
 -X
-Skip bootstrapping new system, and only execute command in chroot environment (default /bin/bash)
+Skip bootstrapping new system, and only execute COMMAND in chroot environment
 
 -h
 This usage help...
@@ -131,7 +133,7 @@ do
     mount --bind /$i $INSTROOT/$i
 done
 
-echo "Executing chroot command: $CHROOT_COMMAND"
+echo "Executing chroot command: ${CHROOT_COMMAND}..."
 LANG=C.UTF-8 chroot $INSTROOT $CHROOT_COMMAND
 
 for i in dev sys proc
