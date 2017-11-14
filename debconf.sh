@@ -96,8 +96,10 @@ install_grub () {
     fi
 
     apt install -y grub-pc cryptsetup
-    echo 'GRUB_CRYPTODISK_ENABLE=y' >> /etc/default/grub
-    echo 'GRUB_PRELOAD_MODULES="lvm cryptodisk"' >> /etc/default/grub
+    cat >> /etc/default/grub <<EOF
+GRUB_CRYPTODISK_ENABLE=y
+GRUB_PRELOAD_MODULES="lvm cryptodisk"
+EOF
     grub-install $BOOT_DEV
     update-initramfs -k all -u
     update-grub
