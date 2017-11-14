@@ -89,7 +89,7 @@ install_zfs () {
 install_grub () {
     if [ $# -eq 1 ]
     then
-	local ROOTDEV="$1"
+	local BOOT_DEV="$1"
     else
 	echo "called install_grub with $# arguments: $@" >&2
 	exit 1
@@ -98,7 +98,7 @@ install_grub () {
     apt install -y grub-pc cryptsetup
     echo 'GRUB_CRYPTODISK_ENABLE=y' >> /etc/default/grub
     echo 'GRUB_PRELOAD_MODULES="lvm cryptodisk"' >> /etc/default/grub
-    grub-install $ROOTDEV
+    grub-install $BOOT_DEV
     update-initramfs -k all -u
     update-grub
 }
@@ -133,8 +133,8 @@ Hostname for the new system
 -s USER
 Name for sudo user instead of root
 
--r PATH
-Device with root and boot partitions
+-b PATH
+Device with boot partition to install GRUB on
 
 -z POOL
 Set name for ZFS pool to be used
@@ -148,7 +148,7 @@ This usage help...
 EOF
 }
 
-while getopts 'l:k:t:n:s:r:z:h' opt
+while getopts 'l:k:t:n:s:b:z:h' opt
 do
     case $opt in
 	l)
@@ -166,8 +166,8 @@ do
 	s)
 	    SUDOUSER=$OPTARG
 	    ;;
-	r)
-	    ROOT_DEV=$OPTARG
+	b)
+	    BOOT_DEV=$OPTARG
 	    ;;
 	z)
 	    ZPOOL=$OPTARG
@@ -202,13 +202,13 @@ then
     exit 1
 fi
 
-if [ -z "$ROOT_DEV" ]
+if [ -z "$BOOT_DEV" ]
 then
-    echo "ERROR: root device has to be specified for GRUB!" >&2
+    echo "ERROR: boot device has to be specified for GRUB!" >&2
     exit 1
-elif [ ! -b "$ROOT_DEV" ]
+elif [ ! -b "$BOOT_DEV" ]
 then
-    echo "ERROR: $ROOT_DEV is not a block device!" >&2
+    echo "ERROR: $BOOT_DEV is not a block device!" >&2
     exit 1
 fi
 
@@ -238,6 +238,6 @@ then
     install_zfs
 fi
 
-install_grub $ROOT_DEV
+install_grub $BOOT_DEV
 
 echo "Finished configuring Debian system!"
