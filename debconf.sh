@@ -233,6 +233,9 @@ apt install -y console-setup
 if [ ! -z "$SUDOUSER" ]
 then
     init_sudouser $SUDOUSER
+else
+    echo "Setting password for root user..."
+    passwd
 fi
 
 if [ ! -z "$ZPOOL" ]
