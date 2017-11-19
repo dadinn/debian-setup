@@ -234,6 +234,10 @@ then
 fi
 
 echo $HOSTNAME > /etc/hostname
+cat >> /etc/hosts <<EOF
+172.0.0.1 $HOSTNAME
+::1 $HOSTNAME
+EOF
 
 init_apt
 apt update
