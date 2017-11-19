@@ -87,15 +87,17 @@ install_zfs () {
 }
 
 install_grub () {
-    if [ $# -eq 1 ]
+    if [ $# -eq 2 ]
     then
-	local BOOT_DEV="$1"
+	local BOOT_DEV=$1
+	local ARCH=$2
     else
 	echo "called install_grub with $# arguments: $@" >&2
 	exit 1
     fi
 
-    apt install -y grub-pc cryptsetup
+    apt install -y cryptsetup linux-image-$ARCH
+    apt install -y grub-pc
     cat >> /etc/default/grub <<EOF
 GRUB_CRYPTODISK_ENABLE=y
 GRUB_PRELOAD_MODULES="lvm cryptodisk"
@@ -119,6 +121,9 @@ USAGE:
 $0 [OPTIONS]
 
 Valid options are:
+
+-a ARCH
+Archicture to user for kernel image
 
 -l LOCALE
 Set system locale to use (default $LOCALE)
@@ -150,9 +155,12 @@ This usage help...
 EOF
 }
 
-while getopts 'l:k:t:n:s:b:z:h' opt
+while getopts 'a:l:k:t:n:s:b:z:h' opt
 do
     case $opt in
+	a)
+	    ARCH=$OPTARG
+	    ;;
 	l)
 	    LOCALE=$OPTARG
 	    ;;

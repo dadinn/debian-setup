@@ -134,7 +134,7 @@ do
 done
 
 echo "Executing chroot command: ${CHROOT_COMMAND}..."
-LANG=C.UTF-8 chroot $INSTROOT $CHROOT_COMMAND
+LANG=C.UTF-8 ARCH=$ARCH chroot $INSTROOT $CHROOT_COMMAND
 
 for i in dev sys proc
 do umount $INSTROOT/$i; done
