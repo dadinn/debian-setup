@@ -107,6 +107,11 @@ EOF
     update-grub
 }
 
+# SOURCING INHERITED DEFAULTS
+[ -e /CONFIG_ME ] && . /CONFIG_ME
+BOOT_DEV=$ROOT_DRIVE
+
+# DEFAULTS
 LOCALE=${LOCALE:-en_US.UTF-8}
 KEYMAP=${KEYMAP:-dvorak}
 TIMEZONE="Europe/London"
@@ -140,8 +145,8 @@ Hostname for the new system
 -s USER
 Name for sudo user instead of root
 
--b PATH
-Device with boot partition to install GRUB on
+-b DEVICE
+Device with boot partition to install GRUB on (default $BOOT_DEV)
 
 -z POOL
 Set name for ZFS pool to be used
