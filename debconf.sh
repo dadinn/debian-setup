@@ -260,6 +260,6 @@ then
     install_zfs
 fi
 
-install_grub $BOOT_DEV
+install_grub $BOOT_DEV $ARCH
 
 echo "Finished configuring Debian system!"
