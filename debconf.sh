@@ -246,6 +246,15 @@ configure_locale $LOCALE
 configure_timezone $TIMEZONE
 apt install -y console-setup
 
+if [ ! -z "$ZPOOL" ]
+then
+    echo "Installing ZFS..."
+    install_zfs
+elif [ "$SWAPFILES" -eq 0 ]
+then
+    echo "Installing LVM binaries..."
+    apt install -y lvm2
+fi
 
 if [ ! -z "$SUDOUSER" ]
 then
@@ -253,11 +262,6 @@ then
 else
     echo "Setting password for root user..."
     passwd
-fi
-
-if [ ! -z "$ZPOOL" ]
-then
-    install_zfs
 fi
 
 install_grub $BOOT_DEV $ARCH
