@@ -258,12 +258,14 @@ fi
 
 if [ ! -z "$SUDOUSER" ]
 then
+    echo "Setting up SUDO user to disable root account..."
     init_sudouser $SUDOUSER
 else
     echo "Setting password for root user..."
     passwd
 fi
 
+echo "Installing linux image and GRUB..."
 install_grub $BOOT_DEV $ARCH
 
 echo "Finished configuring Debian system!"
