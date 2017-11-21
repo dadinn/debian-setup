@@ -29,17 +29,17 @@ configure_timezone () {
 	exit 1
     fi
 
+    DEBIAN_FRONTEND=noninteractive apt install -y tzdata
     ZONEFILE="/usr/share/zoneinfo/$TIMEZONE"
 
-    if [ ! -e $ZONEFILE ]
+    if [ -e $ZONEFILE ]
     then
+	ln -sf $ZONEFILE /etc/localtime
+	dpkg-reconfigure -f noninteractive tzdata
+    else
 	echo "ERROR: /usr/share/zoneinfo/$TIMEZONE does not exist!" >&2
 	exit 1
     fi
-
-    apt install -y tzdata
-    ln -sf $ZONEFILE /etc/localtime
-    dpkg-reconfigure -f noninteractive tzdata
 }
 
 init_sudouser () {
