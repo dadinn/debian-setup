@@ -97,7 +97,7 @@ install_grub () {
     fi
 
     apt install -y cryptsetup linux-image-$ARCH
-    DEBIAN_FRONTENT=noninteractive apt install -y grub-pc
+    DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
     cat >> /etc/default/grub <<EOF
 GRUB_CRYPTODISK_ENABLE=y
 GRUB_PRELOAD_MODULES="lvm cryptodisk"
