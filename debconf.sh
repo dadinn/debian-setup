@@ -269,3 +269,13 @@ echo "Installing linux image and GRUB..."
 install_grub $BOOT_DEV $ARCH
 
 echo "Finished configuring Debian system!"
+
+read -p "Would you like to remove configuration script and files? [y/N]" cleanup
+case $cleanup in
+    [yY])
+	rm /CONFIG_ME /debconf.sh
+	;;
+    *)
+	echo "Skipped cleaning up configuration script and files."
+	;;
+esac
