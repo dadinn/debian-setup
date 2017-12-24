@@ -149,7 +149,7 @@ Name for sudo user instead of root
 Device with boot partition to install GRUB on (default $BOOT_DEV)
 
 -z POOL
-Set name for ZFS pool to be used
+Set name for ZFS pool to be used (default $ZPOOL)
 
 -f
 Force run configuration script
