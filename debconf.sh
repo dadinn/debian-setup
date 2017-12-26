@@ -42,21 +42,6 @@ configure_timezone () {
     fi
 }
 
-init_sudouser () {
-    if [ $# -eq 1 ]
-    then
-	SUDOUSER=$1
-    else
-	echo "called init_sudouser with $# args: $@" >&2
-	exit 1
-    fi
-
-    apt install -y sudo
-    useradd -m -G sudo $SUDOUSER
-    passwd $SUDOUSER
-    passwd -l root
-}
-
 install_zfs () {
     if [ $# -eq 0 ]
     then
@@ -84,6 +69,21 @@ install_zfs () {
 	    exit 1
 	    ;;
     esac
+}
+
+init_sudouser () {
+    if [ $# -eq 1 ]
+    then
+	SUDOUSER=$1
+    else
+	echo "called init_sudouser with $# args: $@" >&2
+	exit 1
+    fi
+
+    apt install -y sudo
+    useradd -m -G sudo $SUDOUSER
+    passwd $SUDOUSER
+    passwd -l root
 }
 
 install_grub () {
