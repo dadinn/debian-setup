@@ -235,8 +235,9 @@ fi
 
 echo $HOSTNAME > /etc/hostname
 cat >> /etc/hosts <<EOF
-172.0.0.1 $HOSTNAME
-::1 $HOSTNAME
+127.0.0.1 localhost
+120.0.1.1 $HOSTNAME
+::1 localhost
 EOF
 
 init_apt
