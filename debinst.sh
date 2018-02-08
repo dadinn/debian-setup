@@ -124,8 +124,10 @@ then
     bootstrap $INSTROOT $ARCH $RELEASE $MIRROR
 fi
 
-cp ./debconf.sh ${INSTROOT}
-touch $INSTROOT/CONFIG_ME
+cp ./debconf.sh $INSTROOT
+cat >> $INSTROOT/CONFIG_ME <<EOF
+ARCH=$ARCH
+EOF
 
 for i in dev sys proc
 do
