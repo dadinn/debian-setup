@@ -128,7 +128,7 @@ $0 [OPTIONS]
 Valid options are:
 
 -a ARCH
-Archicture to user for kernel image
+Archicture for kernel image ${ARCH:+(default $ARCH)}
 
 -l LOCALE
 Set system locale to use (default $LOCALE)
@@ -149,7 +149,7 @@ Name for sudo user instead of root
 Device with boot partition to install GRUB on (default $BOOT_DEV)
 
 -z POOL
-Set name for ZFS pool to be used (default $ZPOOL)
+Set name for ZFS pool to be used ${ZPOOL:+(default $ZPOOL)}
 
 -f
 Force run configuration script
