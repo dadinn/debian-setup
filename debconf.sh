@@ -72,7 +72,7 @@ install_zfs () {
 }
 
 init_sudouser () {
-    if [ $# -eq 1 ]
+    if [ $# -eq 1 -a $(echo $1|grep -E "^[a-zA-Z][a-zA-Z0-9]{2,18}$") ]
     then
 	SUDOUSER=$1
     else
@@ -257,10 +257,20 @@ then
     apt install -y lvm2
 fi
 
+if [ -z "$SUDOUSER" ]
+then
+    cat <<EOF
+
+You can disable root user account by creating sudo user instead.
+Type username for sudo user (leave empty to keep root account enabled):
+EOF
+    read SUDOUSER
+fi
+
 if [ ! -z "$SUDOUSER" ]
 then
     echo "Setting up SUDO user to disable root account..."
-    init_sudouser $SUDOUSER
+    init_sudouser "$SUDOUSER"
 else
     echo "Setting password for root user..."
     passwd
