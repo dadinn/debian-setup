@@ -1,10 +1,5 @@
 #!/bin/sh
 
-RELEASE=${RELEASE:-stretch}
-ARCH=${ARCH:-amd64}
-MIRROR=${MIRROR:-http://ftp.uk.debian.org/debian}
-INSTROOT=${INSTROOT:-/mnt/instroot}
-
 bootstrap () {
     if [ $# -eq 4 ]
     then
@@ -25,6 +20,13 @@ bootstrap () {
     echo "Bootstrapping Debian release $RELEASE archictecture $ARCH..."
     debootstrap --arch $ARCH --include lsb-release $RELEASE $INSTROOT $MIRROR
 }
+
+# DEFAULTS
+
+RELEASE=${RELEASE:-stretch}
+ARCH=${ARCH:-amd64}
+MIRROR=${MIRROR:-http://ftp.uk.debian.org/debian}
+INSTROOT=${INSTROOT:-/mnt/instroot}
 
 usage () {
     cat <<EOF
