@@ -108,6 +108,8 @@ install_grub () {
     cat >> /etc/default/grub <<EOF
 GRUB_CRYPTODISK_ENABLE=y
 GRUB_PRELOAD_MODULES="lvm cryptodisk"
+GRUB_CMDLINE_LINUX_DEFAULT=quite
+GRUB_TERMINAL=console
 EOF
     grub-install $BOOT_DEV
     update-initramfs -k all -u
