@@ -1,5 +1,12 @@
 #!/bin/sh
 
+ERROR_EXIT() {
+    local MESSAGE="$1"
+    local CODE="$2"
+    echo "ERROR: $MESSAGE" >&2
+    exit ${CODE:-1}
+}
+
 init_apt () {
     cat >> /etc/apt/apt.conf.d/norecommends <<EOF
 APT::Get::Install-Recommends "false";
