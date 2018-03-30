@@ -116,7 +116,18 @@ EOF
 
 # SOURCING INHERITED DEFAULTS
 [ -e /CONFIG_ME ] && . /CONFIG_ME
-BOOT_DEV=$ROOT_DEV
+
+if [ -z "$BOOT_DEV" ]
+then
+    if [ ! -z "$ROOT_DEV" ]
+    then
+	BOOT_DEV=$ROOT_DEV
+    else
+	ERROR_EXIT "No valid boot device is specified!"
+    fi
+fi
+
+[ -b "$BOOT_DEV" ] || ERROR_EXIT "$BOOT_DEV is not a block device"
 
 # DEFAULTS
 LOCALE=${LOCALE:-en_US.UTF-8}
