@@ -134,7 +134,7 @@ fi
 # DEFAULTS
 LOCALE=${LOCALE:-en_US.UTF-8}
 KEYMAP=${KEYMAP:-dvorak}
-TIMEZONE="Europe/London"
+TIMEZONE=${TIMEZONE:-"Europe/London"}
 
 usage () {
     cat <<EOF
