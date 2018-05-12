@@ -30,8 +30,7 @@ configure_locale () {
     then
 	local LOCALE=$1
     else
-	echo "called init_locales with $# args: $@" >&2
-	exit 1
+	ERROR_EXIT "called init_locales with $# args: $@"
     fi
 
     apt install -y locales
@@ -43,8 +42,7 @@ configure_timezone () {
     then
 	local TIMEZONE=$1
     else
-	echo "ERROR: called configure_timezone with $# args: $@" >&2
-	exit 1
+	ERROR_EXIT "called configure_timezone with $# args: $@"
     fi
 
     DEBIAN_FRONTEND=noninteractive apt install -y tzdata
@@ -55,18 +53,16 @@ configure_timezone () {
 	ln -sf $ZONEFILE /etc/localtime
 	dpkg-reconfigure -f noninteractive tzdata
     else
-	echo "ERROR: /usr/share/zoneinfo/$TIMEZONE does not exist!" >&2
-	exit 1
+	ERROR_EXIT "/usr/share/zoneinfo/$TIMEZONE does not exist!"
     fi
 }
 
 install_zfs () {
     if [ $# -eq 0 ]
     then
-	RELEASE=$(cat /etc/debian_version | sed -e 's;^\([0-9][0-9]*\)\..*$;\1;')
+	local RELEASE=$(cat /etc/debian_version | sed -e 's;^\([0-9][0-9]*\)\..*$;\1;')
     else
-	echo "ERROR: called install_zfs with $# args: $@" >&2
-	exit 1
+	ERROR_EXIT "called install_zfs with $# args: $@"
     fi
 
     case $RELEASE in
@@ -83,8 +79,7 @@ install_zfs () {
 	    modprobe zfs
 	    ;;
 	*)
-	    echo "ERROR: Debian version $RELEASE is not supported!"
-	    exit 1
+	    ERROR_EXIT "Debian version $RELEASE is not supported!"
 	    ;;
     esac
 }
@@ -92,10 +87,9 @@ install_zfs () {
 init_sudouser () {
     if [ $# -eq 1 -a $(echo $1|grep -E "^[a-zA-Z][a-zA-Z0-9]{2,18}$") ]
     then
-	SUDOUSER=$1
+	local SUDOUSER=$1
     else
-	echo "called init_sudouser with $# args: $@" >&2
-	exit 1
+	ERROR_EXIT "called init_sudouser with $# args: $@"
     fi
 
     apt install -y sudo
@@ -107,11 +101,10 @@ init_sudouser () {
 install_grub () {
     if [ $# -eq 2 ]
     then
-	local BOOT_DEV=$1
-	local ARCH=$2
+	local BOOT_DEV="$1"
+	local ARCH="$2"
     else
-	echo "called install_grub with $# arguments: $@" >&2
-	exit 1
+	ERROR_EXIT "called install_grub with $# arguments: $@"
     fi
 
     apt install -y cryptsetup linux-image-$ARCH
@@ -238,30 +231,25 @@ shift $(($OPTIND - 1))
 
 if [ $(id -u) -ne 0 ]
 then
-    echo "ERROR: This script must be run as root!" >&2
-    exit 1
-fi
+    ERROR_EXIT "This script must be run as root!"
+ fi
 
 if [ ! -e /CONFIG_ME -a ${FORCE_RUN:-0} -lt 1 ]
 then
-    echo "ERROR: This script should be only run on a freshly bootstrapped Debian system! (Use force option to continue anyway)" >&2
-    exit 1
+    ERROR_EXIT "This script should be only run on a freshly bootstrapped Debian system! (Use force option to continue anyway)"
 fi
 
 if [ -z "$BOOT_DEV" ]
 then
-    echo "ERROR: boot device has to be specified for GRUB!" >&2
-    exit 1
+    ERROR_EXIT "boot device has to be specified!"
 elif [ ! -b "$BOOT_DEV" ]
 then
-    echo "ERROR: $BOOT_DEV is not a block device!" >&2
-    exit 1
+    ERROR_EXIT "$BOOT_DEV is not a block device!"
 fi
 
 if [ -z "$HOSTNAME" -o -z "$(echo $HOSTNAME | grep -E '^[[:alpha:]][[:alnum:]-]+$')" ]
 then
-    echo "ERROR: Hostname has to be specified for the new system" >&2
-    exit 1
+    ERROR_EXIT "Hostname has to be specified for the new system"
 fi
 
 echo $HOSTNAME > /etc/hostname
