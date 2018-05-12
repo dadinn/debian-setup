@@ -1,10 +1,21 @@
 #!/bin/sh
 
 ERROR_EXIT() {
+    if [ "$#" -eq 2 ]
+    then
     local MESSAGE="$1"
     local CODE="$2"
+    elif [ "$#" -eq 1 ]
+    then
+	local MESSAGE="$1"
+	local CODE=1
+    else
+	echo "ERROR: calling ERROR_EXIT incorrectly!" >&2
+	exit 1
+    fi
+
     echo "ERROR: $MESSAGE" >&2
-    exit ${CODE:-1}
+    exit $CODE
 }
 
 init_apt () {
