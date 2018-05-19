@@ -123,18 +123,6 @@ EOF
 # SOURCING INHERITED DEFAULTS
 [ -e /CONFIG_ME ] && . /CONFIG_ME
 
-if [ -z "$BOOT_DEV" ]
-then
-    if [ ! -z "$ROOT_DEV" ]
-    then
-	BOOT_DEV=$ROOT_DEV
-    else
-	ERROR_EXIT "No valid boot device is specified!"
-    fi
-fi
-
-[ -b "$BOOT_DEV" ] || ERROR_EXIT "$BOOT_DEV is not a block device"
-
 # DEFAULTS
 LOCALE=${LOCALE:-en_US.UTF-8}
 KEYMAP=${KEYMAP:-dvorak}
@@ -237,6 +225,11 @@ then
 if [ ! -e /CONFIG_ME -a ${FORCE_RUN:-0} -lt 1 ]
 then
     ERROR_EXIT "This script should be only run on a freshly bootstrapped Debian system! (Use force option to continue anyway)"
+fi
+
+if [ -z "$BOOT_DEV" -a ! -z "$ROOT_DEV" ]
+then
+    BOOT_DEV=$ROOT_DEV
 fi
 
 if [ -z "$BOOT_DEV" ]
