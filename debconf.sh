@@ -127,6 +127,7 @@ EOF
 LOCALE=${LOCALE:-en_US.UTF-8}
 KEYMAP=${KEYMAP:-dvorak}
 TIMEZONE=${TIMEZONE:-"Europe/London"}
+INSTALL_ZFS_ONLY=0
 
 usage() {
     cat <<EOF
@@ -163,6 +164,9 @@ Device with boot partition to install GRUB on (default $BOOT_DEV)
 -z POOL
 Set name for ZFS pool to be used ${ZPOOL:+(default $ZPOOL)}
 
+-Z
+Install ZFS kernel modules only, then exit
+
 -f
 Force run configuration script
 
@@ -172,7 +176,7 @@ This usage help...
 EOF
 }
 
-while getopts 'a:l:k:t:n:s:b:z:h' opt
+while getopts 'a:l:k:t:n:s:b:z:Zh' opt
 do
     case $opt in
 	a)
@@ -199,6 +203,9 @@ do
 	z)
 	    ZPOOL=$OPTARG
 	    ;;
+	Z)
+	    INSTALL_ZFS_ONLY=1
+	    ;;
 	f)
 	    FORCE_RUN=1
 	    ;;
@@ -222,12 +229,23 @@ then
     ERROR_EXIT "This script must be run as root!"
  fi
 
+if [ "$INSTALL_ZFS_ONLY" -gt 0 ]
+then
+    echo "Installing ZFS..."
+    install_zfs
+fi
+
 if [ ! -e /CONFIG_ME -a ${FORCE_RUN:-0} -lt 1 ]
 then
     ERROR_EXIT "This script should be only run on a freshly bootstrapped Debian system! (Use force option to continue anyway)"
 fi
 
 if [ -z "$BOOT_DEV" -a ! -z "$ROOT_DEV" ]
+then
+    BOOT_DEV=$ROOT_DEV
+fi
+
+if [ -z "$BOOT_DEV" -a  ! -z "$ROOT_DEV" ]
 then
     BOOT_DEV=$ROOT_DEV
 fi
