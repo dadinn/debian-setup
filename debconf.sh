@@ -1,5 +1,7 @@
 #!/bin/sh
 
+export ZPOOL_VDEV_NAME_PATH=1
+
 ERROR_EXIT() {
     if [ "$#" -eq 2 ]
     then
