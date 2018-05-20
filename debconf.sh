@@ -18,14 +18,14 @@ ERROR_EXIT() {
     exit $CODE
 }
 
-init_apt () {
+init_apt() {
     cat >> /etc/apt/apt.conf.d/norecommends <<EOF
 APT::Get::Install-Recommends "false";
 APT::Get::Install-Suggests "false";
 EOF
 }
 
-configure_locale () {
+configure_locale() {
     if [ $# -eq 1 ]
     then
 	local LOCALE=$1
@@ -37,7 +37,7 @@ configure_locale () {
     locale-gen $LOCALE
 }
 
-configure_timezone () {
+configure_timezone() {
     if [ $# -eq 1 ]
     then
 	local TIMEZONE=$1
@@ -57,7 +57,7 @@ configure_timezone () {
     fi
 }
 
-install_zfs () {
+install_zfs() {
     if [ $# -eq 0 ]
     then
 	local RELEASE=$(cat /etc/debian_version | sed -e 's;^\([0-9][0-9]*\)\..*$;\1;')
@@ -84,7 +84,7 @@ install_zfs () {
     esac
 }
 
-init_sudouser () {
+init_sudouser() {
     if [ $# -eq 1 -a $(echo $1|grep -E "^[a-zA-Z][a-zA-Z0-9]{2,18}$") ]
     then
 	local SUDOUSER=$1
@@ -98,7 +98,7 @@ init_sudouser () {
     passwd -l root
 }
 
-install_grub () {
+install_grub() {
     if [ $# -eq 2 ]
     then
 	local BOOT_DEV="$1"
@@ -128,7 +128,7 @@ LOCALE=${LOCALE:-en_US.UTF-8}
 KEYMAP=${KEYMAP:-dvorak}
 TIMEZONE=${TIMEZONE:-"Europe/London"}
 
-usage () {
+usage() {
     cat <<EOF
 
 Configure a fresh Debian system installation.
