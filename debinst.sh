@@ -1,5 +1,23 @@
 #!/bin/sh
 
+ERROR_EXIT() {
+    if [ "$#" -eq 2 ]
+    then
+    local MESSAGE="$1"
+    local CODE="$2"
+    elif [ "$#" -eq 1 ]
+    then
+	local MESSAGE="$1"
+	local CODE=1
+    else
+	echo "ERROR: calling ERROR_EXIT incorrectly!" >&2
+	exit 1
+    fi
+
+    echo "ERROR: $MESSAGE" >&2
+    exit $CODE
+}
+
 bootstrap () {
     if [ $# -eq 4 ]
     then
@@ -8,8 +26,7 @@ bootstrap () {
 	local RELEASE=$3
 	local MIRROR=$4
     else
-	echo "ERROR: calling bootstrap with $# args: $@" >&2
-	exit 1
+	ERROR_EXIT "calling bootstrap with $# args: $@"
     fi
 
     if ! type debootstrap 2>&1 > /dev/null
@@ -71,8 +88,7 @@ do
 		    ARCH=$OPTARG
 		    ;;
 		*)
-		    echo "ERROR: invalid architecture $OPTARG" >&2
-		    exit 1
+		    ERROR_EXIT "invalid architecture $OPTARG"
 		    ;;
 	    esac
 	    ;;
@@ -111,14 +127,12 @@ fi
 
 if [ $(id -u) -ne 0 ]
 then
-    echo "This script must be run as root!" >&2
-    exit 1
+    ERROR_EXIT "This script must be run as root!"
 fi
 
 if [ -z "$INSTROOT" -o ! -d "$INSTROOT" ]
 then
-    echo "ERROR: Installation target is not a directory" >&2
-    exit 1
+    ERROR_EXIT "Installation target is not a directory"
 fi
 
 if [ ${EXECUTE_ONLY:-0} -ne 1 ]
