@@ -141,9 +141,6 @@ then
 fi
 
 cp ./debconf.sh $INSTROOT
-cat >> $INSTROOT/CONFIG_ME <<EOF
-ARCH=$ARCH
-EOF
 
 for i in dev sys proc
 do
