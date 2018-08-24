@@ -103,7 +103,7 @@ init_sudouser() {
 install_grub() {
     if [ $# -eq 2 ]
     then
-	local BOOT_DEV="$1"
+	local BOOTDEV="$1"
 	local ARCH="$2"
     else
 	ERROR_EXIT "called install_grub with $# arguments: $@"
@@ -117,7 +117,7 @@ GRUB_PRELOAD_MODULES="lvm cryptodisk"
 GRUB_CMDLINE_LINUX_DEFAULT=quite
 GRUB_TERMINAL=console
 EOF
-    grub-install $BOOT_DEV
+    grub-install $BOOTDEV
     update-initramfs -k all -u
     update-grub
 }
@@ -161,7 +161,7 @@ Hostname for the new system
 Name for sudo user instead of root
 
 -b DEVICE
-Device with boot partition to install GRUB on (default $BOOT_DEV)
+Device with boot partition to install GRUB on (default $BOOTDEV)
 
 -z POOL
 Set name for ZFS pool to be used ${ZPOOL:+(default $ZPOOL)}
@@ -200,7 +200,7 @@ do
 	    SUDOUSER=$OPTARG
 	    ;;
 	b)
-	    BOOT_DEV=$OPTARG
+	    BOOTDEV=$OPTARG
 	    ;;
 	z)
 	    ZPOOL=$OPTARG
@@ -242,22 +242,17 @@ then
     ERROR_EXIT "This script should be only run on a freshly bootstrapped Debian system! (Use force option to continue anyway)"
 fi
 
-if [ -z "$BOOT_DEV" -a ! -z "$ROOT_DEV" ]
+if [ -z "$BOOTDEV" -a ! -z "$ROOTDEV" ]
 then
-    BOOT_DEV=$ROOT_DEV
+    BOOTDEV=$ROOT_DEV
 fi
 
-if [ -z "$BOOT_DEV" -a  ! -z "$ROOT_DEV" ]
-then
-    BOOT_DEV=$ROOT_DEV
-fi
-
-if [ -z "$BOOT_DEV" ]
+if [ -z "$BOOTDEV" ]
 then
     ERROR_EXIT "boot device has to be specified!"
-elif [ ! -b "$BOOT_DEV" ]
+elif [ ! -b "$BOOTDEV" ]
 then
-    ERROR_EXIT "$BOOT_DEV is not a block device!"
+    ERROR_EXIT "$BOOTDEV is not a block device!"
 fi
 
 if [ -z "$HOSTNAME" -o -z "$(echo $HOSTNAME | grep -E '^[[:alpha:]][[:alnum:]-]+$')" ]
@@ -309,7 +304,7 @@ then
 fi
 
 echo "Installing linux image and GRUB..."
-install_grub $BOOT_DEV $ARCH
+install_grub $BOOTDEV $ARCH
 
 echo "Finished configuring Debian system!"
 
