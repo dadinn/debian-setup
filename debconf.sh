@@ -244,7 +244,7 @@ fi
 
 if [ -z "$BOOTDEV" -a ! -z "$ROOTDEV" ]
 then
-    BOOTDEV=$ROOT_DEV
+    BOOTDEV=$ROOTDEV
 fi
 
 if [ -z "$BOOTDEV" ]
