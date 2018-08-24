@@ -21,7 +21,7 @@ ERROR_EXIT() {
 bootstrap () {
     if [ $# -eq 4 ]
     then
-	local INSTROOT=$1
+	local TARGET=$1
 	local ARCH=$2
 	local RELEASE=$3
 	local MIRROR=$4
@@ -35,7 +35,7 @@ bootstrap () {
     fi
 
     echo "Bootstrapping Debian release $RELEASE archictecture $ARCH..."
-    debootstrap --arch $ARCH --include lsb-release $RELEASE $INSTROOT $MIRROR
+    debootstrap --arch $ARCH --include lsb-release $RELEASE $TARGET $MIRROR
 }
 
 # DEFAULTS
@@ -43,7 +43,7 @@ bootstrap () {
 RELEASE=${RELEASE:-stretch}
 ARCH=${ARCH:-amd64}
 MIRROR=${MIRROR:-http://ftp.uk.debian.org/debian}
-INSTROOT=${INSTROOT:-/mnt/instroot}
+TARGET=${TARGET:-/mnt/instroot}
 
 usage () {
     cat <<EOF
@@ -68,7 +68,7 @@ The target architecture of the new system. Has to be of either amd64, arm64, arm
 Debian mirror URL to install from (default $MIRROR)
 
 -t PATH
-Installation target as root directory (default $INSTROOT)
+Installation target as root directory (default $TARGET)
 
 -X
 Skip bootstrapping new system, and only execute COMMAND in chroot environment
@@ -99,7 +99,7 @@ do
 	    MIRROR=$OPTARG
 	    ;;
 	t)
-	    INSTROOT=$OPTARG
+	    TARGET=$OPTARG
 	    ;;
 	X)
 	    EXECUTE_ONLY=1
@@ -130,27 +130,27 @@ then
     ERROR_EXIT "This script must be run as root!"
 fi
 
-if [ -z "$INSTROOT" -o ! -d "$INSTROOT" ]
+if [ -z "$TARGET" -o ! -d "$TARGET" ]
 then
     ERROR_EXIT "Installation target is not a directory"
 fi
 
 if [ ${EXECUTE_ONLY:-0} -ne 1 ]
 then
-    bootstrap $INSTROOT $ARCH $RELEASE $MIRROR
+    bootstrap $TARGET $ARCH $RELEASE $MIRROR
 fi
 
-cp ./debconf.sh $INSTROOT
+cp ./debconf.sh $TARGET
 
 for i in dev sys proc
 do
-    [ -e $INSTROOT/$i ] || mkdir $INSTROOT/$i
-    mount --bind /$i $INSTROOT/$i
+    [ -e $TARGET/$i ] || mkdir $TARGET/$i
+    mount --bind /$i $TARGET/$i
 done
 
 echo "Executing chroot command: ${CHROOT_COMMAND}..."
-LANG=C.UTF-8 ARCH=$ARCH chroot $INSTROOT $CHROOT_COMMAND
+LANG=C.UTF-8 ARCH=$ARCH chroot $TARGET $CHROOT_COMMAND
 
 for i in dev sys proc
-do umount $INSTROOT/$i; done
+do umount $TARGET/$i; done
 echo "Finished with Debian installation!"
