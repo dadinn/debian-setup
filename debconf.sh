@@ -161,7 +161,7 @@ Hostname for the new system
 Name for sudo user instead of root
 
 -b DEVICE
-Device with boot partition to install GRUB on (default $BOOTDEV)
+Device with boot partition to install GRUB on ${BOOTDEV:+(default $BOOTDEV)}
 
 -z POOL
 Set name for ZFS pool to be used ${ZPOOL:+(default $ZPOOL)}
