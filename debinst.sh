@@ -142,7 +142,7 @@ fi
 
 cp ./debconf.sh $TARGET
 
-for i in dev sys proc
+for i in dev dev/pts sys proc
 do
     [ -e $TARGET/$i ] || mkdir $TARGET/$i
     mount --bind /$i $TARGET/$i
@@ -151,6 +151,6 @@ done
 echo "Executing chroot command: ${CHROOT_COMMAND}..."
 LANG=C.UTF-8 ARCH=$ARCH chroot $TARGET $CHROOT_COMMAND
 
-for i in dev sys proc
+for i in dev/pts dev sys proc
 do umount $TARGET/$i; done
 echo "Finished with Debian installation!"
