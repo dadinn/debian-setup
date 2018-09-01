@@ -27,6 +27,24 @@ APT::Get::Install-Suggests "false";
 EOF
 }
 
+init_network() {
+    if [ "$#" -eq 1 ]
+    then
+	local DEV="$1"
+    else
+	ERROR_EXIT "called init_network with $# args: $@"
+    fi
+
+    cat > /etc/network/interfaces.d/lo <<EOF
+auto lo
+iface lo inet loopback
+EOF
+    cat > /etc/network/interfaces.d/$DEV <<EOF
+auto $DEV
+iface $DEV inet dhcp
+EOF
+}
+
 configure_locale() {
     if [ $# -eq 1 ]
     then
@@ -268,6 +286,7 @@ cat >> /etc/hosts <<EOF
 EOF
 
 init_apt
+init_network ens3
 apt update
 apt full-upgrade -y
 configure_locale $LOCALE
