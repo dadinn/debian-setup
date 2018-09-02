@@ -54,7 +54,8 @@ configure_locale() {
     fi
 
     apt install -y locales
-    locale-gen $LOCALE
+    sed -ire "s/# \($LOCALE .*\)$/\1/" /etc/locale.gen
+    locale-gen
 }
 
 configure_timezone() {
