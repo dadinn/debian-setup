@@ -20,6 +20,19 @@ ERROR_EXIT() {
     exit $CODE
 }
 
+install_packages() {
+    read -p "Would you like to install additional packages? [Y/n]" packages
+    case $packages in
+	[nN])
+	    echo "Skipped installing additional packages."
+	    ;;
+	*)
+	    echo "Installing additional packages..."
+	    apt install -y info dirmngr
+	    ;;
+    esac
+}
+
 init_apt() {
     cat >> /etc/apt/apt.conf.d/norecommends <<EOF
 APT::Get::Install-Recommends "false";
@@ -325,6 +338,8 @@ fi
 
 echo "Installing linux image and GRUB..."
 install_grub $BOOTDEV $ARCH
+
+install_packages
 
 echo "Finished configuring Debian system!"
 
