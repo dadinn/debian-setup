@@ -155,7 +155,7 @@ EOF
 }
 
 # SOURCING INHERITED DEFAULTS
-[ -e /CONFIG_ME ] && . /CONFIG_ME
+[ -e /CONFIG_VARS.sh ] && . /CONFIG_VARS.sh
 
 # DEFAULTS
 LOCALE=${LOCALE:-en_US.UTF-8}
@@ -269,7 +269,7 @@ then
     install_zfs
 fi
 
-if [ ! -e /CONFIG_ME -a ${FORCE_RUN:-0} -lt 1 ]
+if [ ! -e /CONFIG_VARS.sh -a ${FORCE_RUN:-0} -lt 1 ]
 then
     ERROR_EXIT "This script should be only run on a freshly bootstrapped Debian system! (Use force option to continue anyway)"
 fi
@@ -346,7 +346,7 @@ echo "Finished configuring Debian system!"
 read -p "Would you like to remove configuration script and files? [y/N]" cleanup
 case $cleanup in
     [yY])
-	rm /CONFIG_ME /debconf.sh
+	rm /CONFIG_VARS.sh /debconf.sh
 	;;
     *)
 	echo "Skipped cleaning up configuration script and files."
