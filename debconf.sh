@@ -210,7 +210,7 @@ This usage help...
 EOF
 }
 
-while getopts 'a:l:k:t:n:s:b:z:Zh' opt
+while getopts 'a:l:k:t:n:s:b:z:Zhf' opt
 do
     case $opt in
 	a)
