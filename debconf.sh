@@ -91,6 +91,36 @@ configure_timezone() {
     fi
 }
 
+configure_keyboard() {
+    if [ $# -eq 2 ]
+    then
+	local KEYMAP=$1
+	local OPTIONS=$2
+    else
+	ERROR_EXIT "called configure_keyboard with $# args: $@"
+    fi
+
+    DEBIAN_FRONTEND=noninteractive apt install -y console-setup
+
+    local LAYOUT=$(echo $KEYMAP|cut -d : -f1)
+    local VARIANT=$(echo $KEYMAP|cut -d : -f2)
+    cat >> /etc/default/keyboard <<EOF
+XKBLAYOUT="$LAYOUT"
+XKBVARIANT="$VARIANT"
+XKBOPTIONS="$OPTIONS"
+XKBMODEL="pc105"
+BACKSPACE="guess"
+EOF
+
+    setupcon
+
+    read -p 'Type "Hello" here: ' test
+    if [ $test != "Hello" ]
+    then
+	ERROR_EXIT "Failed to set up keyboard correctly!"
+    fi
+}
+
 install_zfs() {
     if [ $# -eq 0 ]
     then
@@ -158,9 +188,10 @@ EOF
 [ -e /CONFIG_VARS.sh ] && . /CONFIG_VARS.sh
 
 # DEFAULTS
-LOCALE=${LOCALE:-en_US.UTF-8}
-KEYMAP=${KEYMAP:-dvorak}
-TIMEZONE=${TIMEZONE:-"Europe/London"}
+LOCALE="${LOCALE:-en_US.UTF-8}"
+TIMEZONE="${TIMEZONE:-Europe/London}"
+KEYMAP="${KEYMAP:-us:dvorak}"
+XKBOPTIONS="${XKBOPTIONS:-ctrl:nocaps}"
 INSTALL_ZFS_ONLY=0
 
 usage() {
@@ -305,7 +336,7 @@ apt update
 apt full-upgrade -y
 configure_locale $LOCALE
 configure_timezone $TIMEZONE
-apt install -y console-setup
+configure_keyboard $KEYMAP $XKBOPTIONS
 
 if [ -z "$SUDOUSER" ]
 then
