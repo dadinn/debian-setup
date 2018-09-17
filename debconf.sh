@@ -101,10 +101,13 @@ EOF
 
     setupcon
 
-    read -p 'Type "Hello" here: ' test
+    echo "Verifying keyboard layout."
+    read -p 'Please type "Hello" here:' test
     if [ $test != "Hello" ]
     then
-	ERROR_EXIT "Failed to set up keyboard correctly!"
+	echo "FAILED!!!"
+	echo "Falling back to configuring keyboard manually..."
+	dpkg-reconfigure keyboard-configuration
     fi
 }
 
