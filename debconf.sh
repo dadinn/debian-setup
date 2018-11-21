@@ -366,14 +366,38 @@ fi
 echo "Installing linux image and GRUB..."
 install_grub $BOOTDEV $ARCH
 
+cat > FINISH.sh <<EOF
+#!/bin/sh
+
+EOF
+
+if [ ! -z "$ZPOOL" ]
+then
+    cat >> FINISH.sh <<EOF
+zfs set mountpoint=/ $ZPOOL/$ROOTFS
+zpool export $ZPOOL
+EOF
+fi
+
 echo "Finished configuring Debian system!"
 
 read -p "Would you like to remove configuration script and files? [y/N]" cleanup
 case $cleanup in
     [yY])
 	rm /CONFIG_VARS.sh /debconf.sh
+	echo "Removed /debconf.sh and /CONFIG_VARS.sh"
 	;;
     *)
 	echo "Skipped cleaning up configuration script and files."
+	;;
+esac
+
+read -p "Would you like to unmount /boot? [Y/n]" boot_umount
+case $boot_umount in
+    [nN])
+	echo "Left /boot mounted."
+	;;
+    *)
+	umount /boot
 	;;
 esac

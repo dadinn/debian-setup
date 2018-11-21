@@ -149,8 +149,20 @@ do
 done
 
 echo "Executing chroot command: ${CHROOT_COMMAND}..."
-LANG=C.UTF-8 ARCH=$ARCH chroot $TARGET $CHROOT_COMMAND
+LANG=C.UTF-8 ARCH=$ARCH \
+chroot $TARGET $CHROOT_COMMAND
 
 for i in dev/pts dev sys proc
-do umount $TARGET/$i; done
+do umount -lf $TARGET/$i; done
+
+if [ -e $TARGET/FINISH.sh ]
+then
+    cp $TARGET/FINISH.sh .
+    rm $TARGET/FINISH.sh
+    chmod 755 ./FINISH.sh
+    echo "Executing finishing steps..."
+    ./FINISH.sh
+    rm FINISH.sh
+fi
+
 echo "Finished with Debian installation!"
