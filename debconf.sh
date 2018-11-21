@@ -169,9 +169,15 @@ GRUB_PRELOAD_MODULES="lvm cryptodisk"
 GRUB_CMDLINE_LINUX_DEFAULT=quite
 GRUB_TERMINAL=console
 EOF
+    echo "Identifying root filesystem..."
+    if grub-probe / &> /dev/null
+    then
     grub-install $BOOTDEV
     update-initramfs -k all -u
     update-grub
+    else
+	ERROR_EXIT "grub could not identify root filesystem!"
+    fi
 }
 
 # SOURCING INHERITED DEFAULTS
