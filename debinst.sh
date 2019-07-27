@@ -119,7 +119,7 @@ do
     esac
 done
 
-if [ "$opt" = "?" ]; then
+if [ "$#" -lt 1 ]; then
     echo "Running with default values:"
     echo "    Release: ${RELEASE}"
     echo "    Arch: ${ARCH}"
