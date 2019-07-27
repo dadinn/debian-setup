@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env sh
+
+set -e
 
 ERROR_EXIT() {
     if [ "$#" -eq 2 ]
@@ -117,6 +119,11 @@ do
 	    ;;
     esac
 done
+
+if [ "$opt" = "?" ]; then
+    usage
+    exit 0
+fi
 
 shift $(($OPTIND - 1))
 
