@@ -121,8 +121,17 @@ do
 done
 
 if [ "$opt" = "?" ]; then
-    usage
-    exit 0
+	echo "Running with default values:"
+	echo "    Release: ${RELEASE}"
+	echo "    Arch: ${ARCH}"
+	echo "    Mirror: ${MIRROR}"
+	echo "    Installation target: ${TARGET}"
+    read -p 'No arguments set, are you sure you want to proceed with default values? [y/N]: ' PROCEED_WITH_DEFAULTS
+
+	if [ "$PROCEED_WITH_DEFAULTS" != "y" ]; then
+		echo "Installation aborted"
+        exit 0
+	fi
 fi
 
 shift $(($OPTIND - 1))
