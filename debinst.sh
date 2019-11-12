@@ -37,7 +37,6 @@ bootstrap () {
     fi
 
     echo "Bootstrapping Debian release $RELEASE archictecture $ARCH..."
-
     debootstrap --arch $ARCH --include lsb-release,dirmngr,ca-certificates,xz-utils,info $RELEASE $TARGET $MIRROR
 }
 
