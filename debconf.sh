@@ -147,7 +147,7 @@ init_sudouser() {
     fi
 
     apt install -y sudo
-    useradd -m -G sudo $SUDOUSER
+    useradd -m -G sudo $SUDOUSER -s /bin/bash
     passwd $SUDOUSER
     passwd -l root
 }
