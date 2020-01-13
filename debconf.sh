@@ -288,12 +288,14 @@ shift $(($OPTIND - 1))
 if [ $(id -u) -ne 0 ]
 then
     ERROR_EXIT "This script must be run as root!"
- fi
+fi
 
 if [ "$INSTALL_ZFS_ONLY" -gt 0 ]
 then
     echo "Installing ZFS..."
     install_zfs
+    echo "Finished installing ZFS kernel modules!"
+    exit 0
 fi
 
 if [ ! -e /CONFIG_VARS.sh -a ${FORCE_RUN:-0} -lt 1 ]
