@@ -121,7 +121,7 @@ install_zfs() {
 
     case $RELEASE in
 	"8")
-	    cat /etc/apt/sources.list | grep -E '^deb .* jessie main$' | sed -e 's/jessie main$/jessie-backports main contrib/' > /etc/apt/sourced.list.d/backports.list
+	    cat /etc/apt/sources.list | grep -E '^deb .* jessie main$' | sed -e 's/jessie main$/jessie-backports main contrib/' > /etc/apt/sources.list.d/backports.list
 	    apt update
 	    apt install -y -t jessie-backports zfs-dkms zfs-initramfs
 	    modprobe zfs
