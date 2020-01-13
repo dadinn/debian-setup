@@ -140,7 +140,7 @@ then
     bootstrap $TARGET $ARCH $RELEASE $MIRROR
 fi
 
-cp ./debconf.sh $TARGET
+cp $(dirname "$0")/debconf.sh $TARGET
 
 for i in dev sys proc
 do
