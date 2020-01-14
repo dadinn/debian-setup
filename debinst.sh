@@ -160,9 +160,17 @@ then
     cp $TARGET/FINISH.sh .
     rm $TARGET/FINISH.sh
     chmod 755 ./FINISH.sh
-    echo "Executing finishing steps..."
-    ./FINISH.sh
-    rm FINISH.sh
+    read -p "Are you ready to execute finishing steps? [Y/n]" finish
+    case $finish in
+	[nN])
+	    "Skipped executing finishing steps."
+	    ;;
+	*)
+	    echo "Executing finishing steps..."
+	    ./FINISH.sh
+	    rm FINISH.sh
+	    ;;
+    esac
 fi
 
 echo "Finished with Debian installation!"
