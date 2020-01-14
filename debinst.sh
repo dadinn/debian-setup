@@ -142,10 +142,10 @@ fi
 
 cp ./debconf.sh $TARGET
 
-for i in dev dev/pts sys proc
+for i in dev sys proc
 do
     [ -e $TARGET/$i ] || mkdir $TARGET/$i
-    mount --bind /$i $TARGET/$i
+    mount --rbind /$i $TARGET/$i
 done
 
 echo "Executing chroot command: ${CHROOT_COMMAND}..."
