@@ -375,7 +375,7 @@ EOF
 
 if [ ! -z "$ZPOOL" ]
 then
-    cat > FINISH.sh <<EOF
+    cat >> FINISH.sh <<EOF
 zfs set mountpoint=/ $ZPOOL/$ROOTFS
 zpool export $ZPOOL
 EOF
