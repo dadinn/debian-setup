@@ -101,9 +101,9 @@ EOF
 
     setupcon
 
-    echo "Verifying keyboard layout."
-    read -p 'Please type "Hello" here:' test
-    if [ $test != "Hello" ]
+    echo "Verifying keyboard layout..."
+    read -p 'Please type "Hello#123" here: ' kltest
+    if [ $kltest != "Hello#123" ]
     then
 	echo "FAILED!!!"
 	echo "Falling back to configuring keyboard manually..."
