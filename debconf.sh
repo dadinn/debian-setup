@@ -390,7 +390,9 @@ echo Unmounted $TARGET!
 EOF
 fi
 
-echo "Finished configuring Debian system!"
+echo
+echo "FINISHED CONFIGURING NEW DEBIAN SYSTEM!"
+echo
 
 read -p "Would you like to remove configuration script and files? [y/N]" cleanup
 case $cleanup in
