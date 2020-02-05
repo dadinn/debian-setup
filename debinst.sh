@@ -152,8 +152,8 @@ echo "Executing chroot command: ${CHROOT_COMMAND}..."
 LANG=C.UTF-8 ARCH=$ARCH \
 chroot $TARGET $CHROOT_COMMAND
 
-for i in dev/pts dev sys proc
-do umount -lf $TARGET/$i; done
+for i in dev sys proc
+do umount -Rlf $TARGET/$i; done
 
 if [ -e $TARGET/FINISH.sh ]
 then
