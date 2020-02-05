@@ -380,11 +380,13 @@ umount $TARGET/boot
 zfs umount -a
 zfs set mountpoint=/ $ZPOOL/$ROOTFS
 zpool export $ZPOOL
+echo Configured rootfs mountpoint and exported ZFS pool!
 EOF
 else
     cat >> FINISH.sh <<EOF
 umount $TARGET/boot
 umount $TARGET
+echo Unmounted $TARGET!
 EOF
 fi
 
