@@ -173,7 +173,9 @@ then
     esac
 fi
 
-echo "Finished with Debian installation!"
+echo
+echo "FINISHED WITH DEBIAN INSTALLATION!"
+echo
 
 read -p "Ready to reboot the system? [y/N]" reboot
 case $reboot in
