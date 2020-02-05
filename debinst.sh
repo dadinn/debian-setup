@@ -174,3 +174,13 @@ then
 fi
 
 echo "Finished with Debian installation!"
+
+read -p "Ready to reboot the system? [y/N]" reboot
+case $reboot in
+    [yY])
+	systemctl poweroff
+	;;
+    *)
+	echo "Skipped rebooting for now."
+	;;
+esac
