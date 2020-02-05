@@ -163,7 +163,7 @@ then
     read -p "Are you ready to execute finishing steps? [Y/n]" finish
     case $finish in
 	[nN])
-	    "Skipped executing finishing steps."
+	    echo "Skipped executing finishing steps."
 	    ;;
 	*)
 	    echo "Executing finishing steps..."
