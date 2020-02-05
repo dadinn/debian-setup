@@ -376,8 +376,15 @@ EOF
 if [ ! -z "$ZPOOL" ]
 then
     cat >> FINISH.sh <<EOF
+umount $TARGET/boot
+zfs umount -a
 zfs set mountpoint=/ $ZPOOL/$ROOTFS
 zpool export $ZPOOL
+EOF
+else
+    cat >> FINISH.sh <<EOF
+umount $TARGET/boot
+umount $TARGET
 EOF
 fi
 
@@ -391,15 +398,5 @@ case $cleanup in
 	;;
     *)
 	echo "Skipped cleaning up configuration script and files."
-	;;
-esac
-
-read -p "Would you like to unmount /boot? [Y/n]" boot_umount
-case $boot_umount in
-    [nN])
-	echo "Left /boot mounted."
-	;;
-    *)
-	umount /boot
 	;;
 esac
