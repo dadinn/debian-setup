@@ -111,10 +111,19 @@ EOF
     fi
 }
 
+debian_version() {
+    if [ -e /etc/debian_version ]
+    then
+	cat /etc/debian_version | sed -e 's;^\([0-9][0-9]*\)\..*$;\1;'
+    else
+	echo 0
+    fi
+}
+
 install_zfs() {
     if [ $# -eq 0 ]
     then
-	local RELEASE=$(cat /etc/debian_version | sed -e 's;^\([0-9][0-9]*\)\..*$;\1;')
+	local RELEASE="$(debian_version)"
     else
 	ERROR_EXIT "called install_zfs with $# args: $@"
     fi
