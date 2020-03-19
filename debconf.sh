@@ -299,6 +299,12 @@ then
     ERROR_EXIT "This script must be run as root!"
 fi
 
+if [ ${LUKSV2:-0} -eq 1 -a "$(debian_version)" -lt 10 ]
+then
+    echo "Using LUKS format version 2 is only supported by Debian version 10 (Buster) or newer."
+    exit 1
+fi
+
 if [ "$INSTALL_ZFS_ONLY" -gt 0 ]
 then
     echo "Installing ZFS..."
