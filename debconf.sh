@@ -130,18 +130,18 @@ install_zfs() {
 
     if [ $RELEASE -eq 8 ]
     then
-	    cat /etc/apt/sources.list | grep -E '^deb .* jessie main$' | sed -e 's/jessie main$/jessie-backports main contrib/' > /etc/apt/sources.list.d/backports.list
-	    apt update
-	    apt install -y -t jessie-backports zfs-dkms zfs-initramfs
-	    modprobe zfs
+	cat /etc/apt/sources.list | grep -E '^deb .* jessie main$' | sed -e 's/jessie main$/jessie-backports main contrib/' > /etc/apt/sources.list.d/backports.list
+	apt update
+	apt install -y -t jessie-backports zfs-dkms zfs-initramfs
+	modprobe zfs
     elif [ $RELEASE -eq 9 ]
     then
-	    sed -ire 's/stretch main$/stretch main contrib/' /etc/apt/sources.list
-	    apt update
-	    apt install -y zfs-dkms zfs-initramfs
-	    modprobe zfs
+	sed -ire 's/stretch main$/stretch main contrib/' /etc/apt/sources.list
+	apt update
+	apt install -y zfs-dkms zfs-initramfs
+	modprobe zfs
     else
-	    ERROR_EXIT "Debian version $RELEASE is not supported!"
+	ERROR_EXIT "Debian version $RELEASE is not supported!"
     fi
 }
 
