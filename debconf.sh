@@ -134,6 +134,12 @@ install_zfs() {
 	apt update
 	apt install -y -t jessie-backports zfs-dkms zfs-initramfs
 	modprobe zfs
+    elif [ $RELEASE -eq 10 ]
+    then
+	cat /etc/apt/sources.list | grep -E '^deb .* buster main$' | sed -e 's/buster main$/buster-backports main contrib/' > /etc/apt/sources.list.d/backports.list
+	apt update
+	apt install -y -t buster-backports zfs-dkms zfs-initramfs
+	modprobe zfs
     elif [ $RELEASE -eq 9 ]
     then
 	sed -ire 's/stretch main$/stretch main contrib/' /etc/apt/sources.list
