@@ -140,9 +140,9 @@ install_zfs() {
 	apt update
 	apt install -y -t buster-backports zfs-dkms zfs-initramfs
 	modprobe zfs
-    elif [ $RELEASE -eq 9 ]
+    elif [ $RELEASE -ge 9 ]
     then
-	sed -ire 's/stretch main$/stretch main contrib/' /etc/apt/sources.list
+	sed -ire 's/ ([^ ]+) main$/ \1 main contrib/' /etc/apt/sources.list
 	apt update
 	apt install -y zfs-dkms zfs-initramfs
 	modprobe zfs
