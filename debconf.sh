@@ -128,6 +128,9 @@ install_zfs() {
 	ERROR_EXIT "called install_zfs with $# args: $@"
     fi
 
+    apt update
+    apt install -y dkms linux-headers-$(uname -r)
+
     if [ $RELEASE -eq 8 ]
     then
 	cat /etc/apt/sources.list | grep -E '^deb .* jessie main$' | sed -e 's/jessie main$/jessie-backports main contrib/' > /etc/apt/sources.list.d/backports.list
