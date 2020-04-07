@@ -181,11 +181,18 @@ install_grub() {
     apt install -y cryptsetup linux-image-$ARCH
     DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
     cat >> /etc/default/grub <<EOF
-GRUB_CRYPTODISK_ENABLE=y
 GRUB_PRELOAD_MODULES="$(echo $GRUB_MODULES|tr ',' ' ')"
 GRUB_CMDLINE_LINUX_DEFAULT="quiet"
 GRUB_TERMINAL=console
 EOF
+
+    if echo $GRUB_MODULES | grep -qw cryptodisk
+    then
+	cat >> /etc/default/grub <<EOF
+GRUB_CRYPTODISK_ENABLE=y
+EOF
+    fi
+
     echo "Identifying root filesystem..."
     if grub-probe / &> /dev/null
     then
