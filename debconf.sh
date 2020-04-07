@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env sh
+
+set -e
 
 export ZPOOL_VDEV_NAME_PATH=1
 
