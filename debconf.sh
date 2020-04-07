@@ -154,6 +154,47 @@ install_zfs() {
     fi
 }
 
+configure_zfs_cache() {
+    if [ $# -eq 3 ]
+    then
+	local TARGET=$1
+	local ZPOOL=$2
+	local ROOTFS=$3
+    else
+	ERROR_EXIT "called configure_zfs with $# args: $@"
+    fi
+
+    if [ ! -e /etc/zfs/zfs-list.cache ]
+    then
+	mkdir /etc/zfs/zfs-list.cache
+    fi
+
+    touch /etc/zfs/zfs-list.cache/$ZPOOL
+    ln -s /usr/lib/zfs-linux/zed.d/history_event-zfs-list-cacher.sh /etc/zfs/zed.d
+    echo "Updating ZFS cache of mountable filesystems..."
+    zed
+    sleep 3
+    x=1
+    while [ -z "$(cat /etc/zfs/zfs-list.cache/$ZPOOL)" ]
+    do
+	if [ $x -ge 10 ]
+	then
+	    ERROR_EXIT "Not able to update ZFS cache!"
+	else
+	    echo "Still trying..."
+	    zfs set canmount=off $ZPOOL/$ROOTFS
+	    sleep 1
+	    zfs set canmount=on $ZPOOL/$ROOTFS
+	    sleep 1
+	    x=$(( $x + 1 ))
+	fi
+    done
+
+    kill "$(cat /var/run/zed.pid)"
+
+    sed -ire "s|$TARGET/*|/|g" /etc/zfs/zfs-list.cache/$ZPOOL
+}
+
 init_sudouser() {
     if [ $# -eq 1 -a $(echo $1|grep -E "^[a-zA-Z][a-zA-Z0-9]{2,18}$") ]
     then
