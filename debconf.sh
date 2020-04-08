@@ -178,7 +178,7 @@ install_grub() {
 	ERROR_EXIT "called install_grub with $# arguments: $@"
     fi
 
-    apt install -y cryptsetup linux-image-$ARCH
+    apt install -y linux-image-$ARCH
     DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
     cat >> /etc/default/grub <<EOF
 GRUB_PRELOAD_MODULES="$(echo $GRUB_MODULES|tr ',' ' ')"
@@ -387,6 +387,7 @@ fi
 
 if [ ! -z "$ROOTDEV" ]
 then
+    apt install -y cryptsetup
     GRUB_MODULES="cryptodisk"
 fi
 
