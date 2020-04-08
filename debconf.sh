@@ -216,6 +216,14 @@ EOF
     else
 	ERROR_EXIT "grub could not identify root filesystem!"
     fi
+
+    if [ ! -z "$ZPOOL" ]
+    then
+	if ! ls /boot/grub/*/zfs.mod 2>&1 > /dev/null
+	then
+	    ERROR_EXIT "failed to install ZFS module for GRUB!"
+	fi
+    fi
 }
 
 # SOURCING INHERITED DEFAULTS
@@ -409,6 +417,7 @@ if [ ! -z "$ZPOOL" ]
 then
     echo "Installing ZFS..."
     install_zfs
+    configure_zfs_cache $TARGET $ZPOOL $ROOTFS
     GRUB_MODULES="$GRUB_MODULES${GRUB_MODULES:+,}zfs"
 elif [ "$SWAPFILES" -eq 0 ]
 then
