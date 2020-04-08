@@ -486,6 +486,7 @@ then
 umount $TARGET/boot
 zfs umount -a
 zfs set mountpoint=/ $ZPOOL/$ROOTFS
+zfs snapshot $ZPOOL/ROOTFS@install
 zpool export $ZPOOL
 echo Configured rootfs mountpoint and exported ZFS pool!
 EOF
