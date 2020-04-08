@@ -37,10 +37,14 @@ init_network() {
 auto lo
 iface lo inet loopback
 EOF
-    cat > /etc/network/interfaces.d/$DEV <<EOF
-auto $DEV
-iface $DEV inet dhcp
+
+    for dev in $(ls /sys/class/net | grep -E 'en[a-z0-9]+')
+    do
+	cat > /etc/network/interfaces.d/$dev <<EOF
+auto $dev
+iface $dev inet dhcp
 EOF
+    done
 }
 
 configure_locale() {
