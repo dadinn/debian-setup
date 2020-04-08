@@ -174,6 +174,13 @@ install_grub() {
 	local BOOTDEV="$1"
 	local ARCH="$2"
 	local GRUB_MODULES="$3"
+    elif [ $# -eq 5 ]
+    then
+	local BOOTDEV="$1"
+	local ARCH="$2"
+	local GRUB_MODULES="$3"
+	local ZPOOL="$4"
+	local ROOTFS="$5"
     else
 	ERROR_EXIT "called install_grub with $# arguments: $@"
     fi
@@ -190,6 +197,13 @@ EOF
     then
 	cat >> /etc/default/grub <<EOF
 GRUB_CRYPTODISK_ENABLE=y
+EOF
+    fi
+
+    if [ ! -z $ZPOOL ]
+    then
+	cat >> /etc/default/grub <<EOF
+GRUB_CMDLINE_LINUX=root=ZFS=$ZPOOL/$ROOTFS
 EOF
     fi
 
@@ -404,7 +418,12 @@ then
 fi
 
 echo "Installing linux image and GRUB..."
-install_grub $BOOTDEV $ARCH
+if [ ! -z "$ZPOOL" ]
+then
+    install_grub $BOOTDEV $ARCH $GRUB_MODULES $ZPOOL $ROOTFS
+else
+    install_grub $BOOTDEV $ARCH $GRUB_MODULES
+fi
 
 cat > FINISH.sh <<EOF
 #!/bin/sh
