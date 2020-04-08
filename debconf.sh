@@ -182,7 +182,7 @@ install_grub() {
     cat >> /etc/default/grub <<EOF
 GRUB_CRYPTODISK_ENABLE=y
 GRUB_PRELOAD_MODULES="lvm cryptodisk"
-GRUB_CMDLINE_LINUX_DEFAULT=quite
+GRUB_CMDLINE_LINUX_DEFAULT="quiet"
 GRUB_TERMINAL=console
 EOF
     echo "Identifying root filesystem..."
