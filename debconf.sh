@@ -28,10 +28,8 @@ EOF
 }
 
 init_network() {
-    if [ "$#" -eq 1 ]
+    if [ ! "$#" -eq 0 ]
     then
-	local DEV="$1"
-    else
 	ERROR_EXIT "called init_network with $# args: $@"
     fi
 
@@ -375,7 +373,7 @@ cat >> /etc/hosts <<EOF
 EOF
 
 init_apt
-init_network ens3
+init_network
 apt update
 apt full-upgrade -y
 configure_locale $LOCALE
