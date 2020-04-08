@@ -468,6 +468,17 @@ then
     echo "Installing LVM binaries..."
     apt install -y lvm2
     GRUB_MODULES="$GRUB_MODULES${GRUB_MODULES:+,}lvm"
+
+    ### Disable udev synchronization
+    if [ -e /etc/lvm/lvm.conf ]
+    then
+	mv /etc/lvm/lvm.conf /etc/lvm/lvm.conf.bak
+	cat /etc/lvm/lvm.conf.bak |\
+	    sed -re 's|(multipath_component_detection =) [0-9]+|\1 0|' |\
+	    sed -re 's|(md_component_detection =) [0-9]+|\1 0|' |\
+	    sed -re 's|(udev_sync =) [0-9]+|\1 0|' |\
+	    sed -re 's|(udev_rules =) [0-9]+|\1 0|' > /etc/lvm/lvm.conf
+    fi
 fi
 
 echo "Installing linux image and GRUB..."
