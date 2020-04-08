@@ -165,6 +165,7 @@ init_sudouser() {
     useradd -m -G sudo $SUDOUSER -s /bin/bash
     passwd $SUDOUSER
     passwd -l root
+    usermod -s /sbin/nologin root
 }
 
 install_kernel_zfs() {
