@@ -216,6 +216,14 @@ EOF
     else
 	ERROR_EXIT "grub could not identify root filesystem!"
     fi
+
+    if [ ! -z "$ZPOOL" ]
+    then
+	if ! ls /boot/grub/*/zfs.mod 2>&1 > /dev/null
+	then
+	    ERROR_EXIT "failed to install ZFS module for GRUB!"
+	fi
+    fi
 }
 
 # SOURCING INHERITED DEFAULTS
