@@ -222,18 +222,20 @@ EOF
 }
 
 install_grub() {
-    if [ $# -eq 3 ]
+    if [ $# -eq 4 ]
     then
 	local BOOTDEV="$1"
-	local ARCH="$2"
-	local GRUB_MODULES="$3"
-    elif [ $# -eq 5 ]
+	local UEFIBOOT="$2"
+	local ARCH="$3"
+	local GRUB_MODULES="$4"
+    elif [ $# -eq 6 ]
     then
 	local BOOTDEV="$1"
-	local ARCH="$2"
-	local GRUB_MODULES="$3"
-	local ZPOOL="$4"
-	local ROOTFS="$5"
+	local UEFIBOOT="$2"
+	local ARCH="$3"
+	local GRUB_MODULES="$4"
+	local ZPOOL="$5"
+	local ROOTFS="$6"
     else
 	ERROR_EXIT "called install_grub with $# arguments: $@"
     fi
@@ -472,10 +474,10 @@ echo "Installing linux image and GRUB..."
 if [ ! -z "$ZPOOL" ]
 then
     install_kernel_zfs $ARCH
-    install_grub $BOOTDEV $ARCH $GRUB_MODULES $ZPOOL $ROOTFS
+    install_grub $BOOTDEV $UEFIBOOT $ARCH $GRUB_MODULES $ZPOOL $ROOTFS
 else
     apt install -y linux-image-$ARCH
-    install_grub $BOOTDEV $ARCH $GRUB_MODULES
+    install_grub $BOOTDEV $UEFIBOOT $ARCH $GRUB_MODULES
 fi
 
 cat > FINISH.sh <<EOF
