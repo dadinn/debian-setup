@@ -169,22 +169,30 @@ init_sudouser() {
 }
 
 install_grub() {
-    if [ $# -eq 2 ]
+    if [ $# -eq 3 ]
     then
 	local BOOTDEV="$1"
 	local ARCH="$2"
+	local GRUB_MODULES="$3"
     else
 	ERROR_EXIT "called install_grub with $# arguments: $@"
     fi
 
-    apt install -y cryptsetup linux-image-$ARCH
+    apt install -y linux-image-$ARCH
     DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
     cat >> /etc/default/grub <<EOF
-GRUB_CRYPTODISK_ENABLE=y
-GRUB_PRELOAD_MODULES="lvm cryptodisk"
-GRUB_CMDLINE_LINUX_DEFAULT=quite
+GRUB_PRELOAD_MODULES="$(echo $GRUB_MODULES|tr ',' ' ')"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet"
 GRUB_TERMINAL=console
 EOF
+
+    if echo $GRUB_MODULES | grep -qw cryptodisk
+    then
+	cat >> /etc/default/grub <<EOF
+GRUB_CRYPTODISK_ENABLE=y
+EOF
+    fi
+
     echo "Identifying root filesystem..."
     if grub-probe / &> /dev/null
     then
@@ -377,14 +385,22 @@ else
     passwd
 fi
 
+if [ ! -z "$ROOTDEV" ]
+then
+    apt install -y cryptsetup
+    GRUB_MODULES="cryptodisk"
+fi
+
 if [ ! -z "$ZPOOL" ]
 then
     echo "Installing ZFS..."
     install_zfs
+    GRUB_MODULES="$GRUB_MODULES${GRUB_MODULES:+,}zfs"
 elif [ "$SWAPFILES" -eq 0 ]
 then
     echo "Installing LVM binaries..."
     apt install -y lvm2
+    GRUB_MODULES="$GRUB_MODULES${GRUB_MODULES:+,}lvm"
 fi
 
 echo "Installing linux image and GRUB..."
