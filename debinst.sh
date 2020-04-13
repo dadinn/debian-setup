@@ -40,7 +40,7 @@ bootstrap () {
 
 # DEFAULTS
 
-RELEASE=${RELEASE:-stretch}
+RELEASE=${RELEASE:-buster}
 ARCH=${ARCH:-amd64}
 MIRROR=${MIRROR:-http://ftp.uk.debian.org/debian}
 TARGET=${TARGET:-/mnt/instroot}
