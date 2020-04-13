@@ -111,10 +111,19 @@ EOF
     fi
 }
 
+debian_version() {
+    if [ -e /etc/debian_version ]
+    then
+	cat /etc/debian_version | sed -e 's;^\([0-9][0-9]*\)\..*$;\1;'
+    else
+	echo 0
+    fi
+}
+
 install_zfs() {
     if [ $# -eq 0 ]
     then
-	local RELEASE=$(cat /etc/debian_version | sed -e 's;^\([0-9][0-9]*\)\..*$;\1;')
+	local RELEASE="$(debian_version)"
     else
 	ERROR_EXIT "called install_zfs with $# args: $@"
     fi
@@ -288,6 +297,12 @@ shift $(($OPTIND - 1))
 if [ $(id -u) -ne 0 ]
 then
     ERROR_EXIT "This script must be run as root!"
+fi
+
+if [ ${LUKSV2:-0} -eq 1 -a "$(debian_version)" -lt 10 ]
+then
+    echo "Using LUKS format version 2 is only supported by Debian version 10 (Buster) or newer."
+    exit 1
 fi
 
 if [ "$INSTALL_ZFS_ONLY" -gt 0 ]
