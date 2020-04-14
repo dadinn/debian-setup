@@ -154,6 +154,47 @@ install_zfs() {
     fi
 }
 
+configure_zfs_cache() {
+    if [ $# -eq 3 ]
+    then
+	local TARGET=$1
+	local ZPOOL=$2
+	local ROOTFS=$3
+    else
+	ERROR_EXIT "called configure_zfs with $# args: $@"
+    fi
+
+    if [ ! -e /etc/zfs/zfs-list.cache ]
+    then
+	mkdir /etc/zfs/zfs-list.cache
+    fi
+
+    touch /etc/zfs/zfs-list.cache/$ZPOOL
+    ln -s /usr/lib/zfs-linux/zed.d/history_event-zfs-list-cacher.sh /etc/zfs/zed.d
+    echo "Updating ZFS cache of mountable filesystems..."
+    zed
+    sleep 3
+    x=1
+    while [ -z "$(cat /etc/zfs/zfs-list.cache/$ZPOOL)" ]
+    do
+	if [ $x -ge 10 ]
+	then
+	    ERROR_EXIT "Not able to update ZFS cache!"
+	else
+	    echo "Still trying..."
+	    zfs set canmount=off $ZPOOL/$ROOTFS
+	    sleep 1
+	    zfs set canmount=on $ZPOOL/$ROOTFS
+	    sleep 1
+	    x=$(( $x + 1 ))
+	fi
+    done
+
+    kill "$(cat /var/run/zed.pid)"
+
+    sed -ire "s|$TARGET/*|/|g" /etc/zfs/zfs-list.cache/$ZPOOL
+}
+
 init_sudouser() {
     if [ $# -eq 1 -a $(echo $1|grep -E "^[a-zA-Z][a-zA-Z0-9]{2,18}$") ]
     then
@@ -174,6 +215,13 @@ install_grub() {
 	local BOOTDEV="$1"
 	local ARCH="$2"
 	local GRUB_MODULES="$3"
+    elif [ $# -eq 5 ]
+    then
+	local BOOTDEV="$1"
+	local ARCH="$2"
+	local GRUB_MODULES="$3"
+	local ZPOOL="$4"
+	local ROOTFS="$5"
     else
 	ERROR_EXIT "called install_grub with $# arguments: $@"
     fi
@@ -193,6 +241,13 @@ GRUB_CRYPTODISK_ENABLE=y
 EOF
     fi
 
+    if [ ! -z $ZPOOL ]
+    then
+	cat >> /etc/default/grub <<EOF
+GRUB_CMDLINE_LINUX=root=ZFS=$ZPOOL/$ROOTFS
+EOF
+    fi
+
     echo "Identifying root filesystem..."
     if grub-probe / &> /dev/null
     then
@@ -201,6 +256,14 @@ EOF
     update-grub
     else
 	ERROR_EXIT "grub could not identify root filesystem!"
+    fi
+
+    if [ ! -z "$ZPOOL" ]
+    then
+	if ! ls /boot/grub/*/zfs.mod 2>&1 > /dev/null
+	then
+	    ERROR_EXIT "failed to install ZFS module for GRUB!"
+	fi
     fi
 }
 
@@ -395,6 +458,7 @@ if [ ! -z "$ZPOOL" ]
 then
     echo "Installing ZFS..."
     install_zfs
+    configure_zfs_cache $TARGET $ZPOOL $ROOTFS
     GRUB_MODULES="$GRUB_MODULES${GRUB_MODULES:+,}zfs"
 elif [ "$SWAPFILES" -eq 0 ]
 then
@@ -404,7 +468,12 @@ then
 fi
 
 echo "Installing linux image and GRUB..."
-install_grub $BOOTDEV $ARCH
+if [ ! -z "$ZPOOL" ]
+then
+    install_grub $BOOTDEV $ARCH $GRUB_MODULES $ZPOOL $ROOTFS
+else
+    install_grub $BOOTDEV $ARCH $GRUB_MODULES
+fi
 
 cat > FINISH.sh <<EOF
 #!/bin/sh
@@ -417,6 +486,7 @@ then
 umount $TARGET/boot
 zfs umount -a
 zfs set mountpoint=/ $ZPOOL/$ROOTFS
+zfs snapshot $ZPOOL/ROOTFS@install
 zpool export $ZPOOL
 echo Configured rootfs mountpoint and exported ZFS pool!
 EOF
