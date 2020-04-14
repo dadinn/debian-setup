@@ -28,10 +28,8 @@ EOF
 }
 
 init_network() {
-    if [ "$#" -eq 1 ]
+    if [ ! "$#" -eq 0 ]
     then
-	local DEV="$1"
-    else
 	ERROR_EXIT "called init_network with $# args: $@"
     fi
 
@@ -39,10 +37,14 @@ init_network() {
 auto lo
 iface lo inet loopback
 EOF
-    cat > /etc/network/interfaces.d/$DEV <<EOF
-auto $DEV
-iface $DEV inet dhcp
+
+    for dev in $(ls /sys/class/net | grep -E 'en[a-z0-9]+')
+    do
+	cat > /etc/network/interfaces.d/$dev <<EOF
+auto $dev
+iface $dev inet dhcp
 EOF
+    done
 }
 
 configure_locale() {
@@ -422,7 +424,7 @@ cat >> /etc/hosts <<EOF
 EOF
 
 init_apt
-init_network ens3
+init_network
 apt update
 apt full-upgrade -y
 configure_locale $LOCALE
