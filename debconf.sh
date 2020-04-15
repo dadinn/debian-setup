@@ -230,7 +230,6 @@ EOF
     fi
 
     grub-install $BOOTDEV
-    update-initramfs -k all -u
     update-grub
 
     if [ ! -z "$ZPOOL" ]
