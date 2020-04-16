@@ -261,6 +261,7 @@ LOCALE="${LOCALE:-en_US.UTF-8}"
 TIMEZONE="${TIMEZONE:-Europe/London}"
 KEYMAP="${KEYMAP:-us:dvorak}"
 XKBOPTIONS="${XKBOPTIONS:-ctrl:nocaps}"
+UEFIBOOT="${UEFIBOOT:-0}"
 INSTALL_ZFS_ONLY=0
 
 usage() {
