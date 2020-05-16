@@ -42,7 +42,7 @@ bootstrap () {
 
 RELEASE=${RELEASE:-buster}
 ARCH=${ARCH:-amd64}
-MIRROR=${MIRROR:-http://ftp.uk.debian.org/debian}
+MIRROR=${MIRROR:-http://deb.debian.org/debian}
 TARGET=${TARGET:-/mnt/instroot}
 
 usage () {
