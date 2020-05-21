@@ -212,7 +212,7 @@ install_grub() {
     cat >> /etc/default/grub <<EOF
 GRUB_PRELOAD_MODULES="$(echo $GRUB_MODULES|tr ',' ' ')"
 GRUB_CMDLINE_LINUX_DEFAULT="quiet"
-GRUB_TERMINAL=console
+GRUB_TERMINAL="console"
 EOF
 
     if echo $GRUB_MODULES | grep -qw cryptodisk
