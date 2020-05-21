@@ -145,7 +145,7 @@ fi
 
 cp $(dirname "$0")/debconf.sh $TARGET
 
-for i in dev sys proc
+for i in dev sys proc run
 do
     [ -e $TARGET/$i ] || mkdir $TARGET/$i
     mount --rbind /$i $TARGET/$i
@@ -155,7 +155,7 @@ echo "Executing chroot command: ${CHROOT_COMMAND}..."
 LANG=C.UTF-8 ARCH=$ARCH \
 chroot $TARGET $CHROOT_COMMAND
 
-for i in dev sys proc
+for i in dev sys proc run
 do umount -Rlf $TARGET/$i; done
 
 if [ -e $TARGET/FINISH.sh ]
