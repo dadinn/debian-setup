@@ -191,24 +191,15 @@ install_kernel_zfs() {
     fi
 }
 
-install_grub() {
-    if [ $# -eq 3 ]
+configure_grub() {
+    if [ $# -eq 2 ]
     then
-	local BOOTDEV="$1"
-	local ARCH="$2"
-	local GRUB_MODULES="$3"
-    elif [ $# -eq 5 ]
-    then
-	local BOOTDEV="$1"
-	local ARCH="$2"
-	local GRUB_MODULES="$3"
-	local ZPOOL="$4"
-	local ROOTFS="$5"
+	local GRUB_MODULES="$1"
+	local ZPOOL="$2"
     else
-	ERROR_EXIT "called install_grub with $# arguments: $@"
+	ERROR_EXIT "called configure_grub with $# args: $@"
     fi
 
-    DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
     cat >> /etc/default/grub <<EOF
 GRUB_CMDLINE_LINUX_DEFAULT="quiet"
 GRUB_TERMINAL="console"
@@ -228,7 +219,28 @@ EOF
 GRUB_CMDLINE_LINUX=root=ZFS=$ZPOOL/$ROOTFS
 EOF
     fi
+}
 
+install_grub() {
+    if [ $# -eq 3 ]
+    then
+	local BOOTDEV="$1"
+	local ARCH="$2"
+	local GRUB_MODULES="$3"
+    elif [ $# -eq 5 ]
+    then
+	local BOOTDEV="$1"
+	local ARCH="$2"
+	local GRUB_MODULES="$3"
+	local ZPOOL="$4"
+	local ROOTFS="$5"
+    else
+	ERROR_EXIT "called install_grub with $# arguments: $@"
+    fi
+
+    DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
+
+    configure_grub "$GRUB_MODULES" "$ZPOOL"
     grub-install $BOOTDEV
     update-grub
 
