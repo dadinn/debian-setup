@@ -240,10 +240,23 @@ install_grub() {
 	ERROR_EXIT "called install_grub with $# arguments: $@"
     fi
 
-    DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
+    if [ $UEFIBOOT -eq 1 ]
+    then
+	DEBIAN_FRONTEND=noninteractive apt install -y grub-efi xz-utils
+	configure_grub "$GRUB_MODULES" "$ZPOOL"
+	grub-install \
+	    --target=x86_64-efi \
+	    --efi-directory=/boot/efi \
+	    --bootloader-id=debian \
+	    --compress=xz \
+	    --recheck \
+	    $BOOTDEV
+    else
+	DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
+	configure_grub "$GRUB_MODULES" "$ZPOOL"
+	grub-install $BOOTDEV
+    fi
 
-    configure_grub "$GRUB_MODULES" "$ZPOOL"
-    grub-install $BOOTDEV
     update-grub
 
     if [ ! -z "$ZPOOL" ]
