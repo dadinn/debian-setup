@@ -137,7 +137,10 @@ fi
 
 if [ ${EXECUTE_ONLY:-0} -ne 1 ]
 then
-    bootstrap $TARGET $ARCH $RELEASE $MIRROR
+    if ! bootstrap $TARGET $ARCH $RELEASE $MIRROR
+    then
+	ERROR_EXIT "Failed bootstrapping Debian under $TARGET using $MIRROR"
+    fi
 fi
 
 cp $(dirname "$0")/debconf.sh $TARGET
