@@ -130,9 +130,6 @@ install_zfs() {
 	ERROR_EXIT "called install_zfs with $# args: $@"
     fi
 
-    apt update
-    apt install -y dkms linux-headers-$(uname -r)
-
     if [ $RELEASE -eq 8 ]
     then
 	cat /etc/apt/sources.list | grep -E '^deb.* jessie main$' | sed -e 's/jessie main$/jessie-backports main contrib/' > /etc/apt/sources.list.d/backports.list
@@ -170,6 +167,29 @@ init_sudouser() {
     passwd -l root
 }
 
+install_kernel_zfs() {
+    if [ $# -eq 1 ]
+    then
+	local ARCH="$1"
+	local RELEASE="$(debian_version)"
+    else
+	ERROR_EXIT "called install_kernel_zfs with $# args: $@"
+    fi
+
+    if [ $RELEASE -eq 8 ]
+    then
+	apt install -y -t jessie-backports linux-image-$ARCH
+    elif [ $RELEASE -eq 10 ]
+    then
+	apt install -y -t buster-backports linux-image-$ARCH
+    elif [ $RELEASE -ge 9 ]
+    then
+	apt install -y linux-image-$ARCH
+    else
+	ERROR_EXIT "Debian version $RELEASE is not supported!"
+    fi
+}
+
 install_grub() {
     if [ $# -eq 3 ]
     then
@@ -187,7 +207,6 @@ install_grub() {
 	ERROR_EXIT "called install_grub with $# arguments: $@"
     fi
 
-    apt install -y linux-image-$ARCH
     DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
     cat >> /etc/default/grub <<EOF
 GRUB_PRELOAD_MODULES="$(echo $GRUB_MODULES|tr ',' ' ')"
@@ -428,8 +447,10 @@ fi
 echo "Installing linux image and GRUB..."
 if [ ! -z "$ZPOOL" ]
 then
+    install_kernel_zfs $ARCH
     install_grub $BOOTDEV $ARCH $GRUB_MODULES $ZPOOL $ROOTFS
 else
+    apt install -y linux-image-$ARCH
     install_grub $BOOTDEV $ARCH $GRUB_MODULES
 fi
 
