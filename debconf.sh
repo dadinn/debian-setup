@@ -210,9 +210,9 @@ install_grub() {
 
     DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
     cat >> /etc/default/grub <<EOF
-GRUB_PRELOAD_MODULES="$(echo $GRUB_MODULES|tr ',' ' ')"
 GRUB_CMDLINE_LINUX_DEFAULT="quiet"
 GRUB_TERMINAL="console"
+GRUB_PRELOAD_MODULES="$(echo $GRUB_MODULES|tr ',' ' ')"
 EOF
 
     if echo $GRUB_MODULES | grep -qw cryptodisk
