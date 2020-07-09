@@ -174,6 +174,13 @@ install_grub() {
 	local BOOTDEV="$1"
 	local ARCH="$2"
 	local GRUB_MODULES="$3"
+    elif [ $# -eq 5 ]
+    then
+	local BOOTDEV="$1"
+	local ARCH="$2"
+	local GRUB_MODULES="$3"
+	local ZPOOL="$4"
+	local ROOTFS="$5"
     else
 	ERROR_EXIT "called install_grub with $# arguments: $@"
     fi
@@ -193,14 +200,23 @@ GRUB_CRYPTODISK_ENABLE=y
 EOF
     fi
 
-    echo "Identifying root filesystem..."
-    if grub-probe / &> /dev/null
+    if [ ! -z $ZPOOL ]
     then
+	cat >> /etc/default/grub <<EOF
+GRUB_CMDLINE_LINUX=root=ZFS=$ZPOOL/$ROOTFS
+EOF
+    fi
+
     grub-install $BOOTDEV
     update-initramfs -k all -u
     update-grub
-    else
-	ERROR_EXIT "grub could not identify root filesystem!"
+
+    if [ ! -z "$ZPOOL" ]
+    then
+	if ! ls /boot/grub/*/zfs.mod 2>&1 > /dev/null
+	then
+	    ERROR_EXIT "failed to install ZFS module for GRUB!"
+	fi
     fi
 }
 
@@ -396,6 +412,10 @@ then
     echo "Installing ZFS..."
     install_zfs
     GRUB_MODULES="$GRUB_MODULES${GRUB_MODULES:+,}zfs"
+    systemctl enable zfs-import-cache.service
+    systemctl enable zfs-import-cache.target
+    systemctl enable zfs-mount.service
+    systemctl enable zfs-mount.target
 elif [ "$SWAPFILES" -eq 0 ]
 then
     echo "Installing LVM binaries..."
@@ -404,7 +424,12 @@ then
 fi
 
 echo "Installing linux image and GRUB..."
-install_grub $BOOTDEV $ARCH
+if [ ! -z "$ZPOOL" ]
+then
+    install_grub $BOOTDEV $ARCH $GRUB_MODULES $ZPOOL $ROOTFS
+else
+    install_grub $BOOTDEV $ARCH $GRUB_MODULES
+fi
 
 cat > FINISH.sh <<EOF
 #!/bin/sh
@@ -417,6 +442,7 @@ then
 umount $TARGET/boot
 zfs umount -a
 zfs set mountpoint=/ $ZPOOL/$ROOTFS
+zfs snapshot $ZPOOL/ROOTFS@install
 zpool export $ZPOOL
 echo Configured rootfs mountpoint and exported ZFS pool!
 EOF
