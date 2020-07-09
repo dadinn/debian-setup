@@ -207,15 +207,9 @@ GRUB_CMDLINE_LINUX=root=ZFS=$ZPOOL/$ROOTFS
 EOF
     fi
 
-    echo "Identifying root filesystem..."
-    if grub-probe / &> /dev/null
-    then
     grub-install $BOOTDEV
     update-initramfs -k all -u
     update-grub
-    else
-	ERROR_EXIT "grub could not identify root filesystem!"
-    fi
 
     if [ ! -z "$ZPOOL" ]
     then
