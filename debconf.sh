@@ -418,6 +418,10 @@ then
     echo "Installing ZFS..."
     install_zfs
     GRUB_MODULES="$GRUB_MODULES${GRUB_MODULES:+,}zfs"
+    systemctl enable zfs-import-cache.service
+    systemctl enable zfs-import-cache.target
+    systemctl enable zfs-mount.service
+    systemctl enable zfs-mount.target
 elif [ "$SWAPFILES" -eq 0 ]
 then
     echo "Installing LVM binaries..."
