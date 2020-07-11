@@ -28,10 +28,8 @@ EOF
 }
 
 init_network() {
-    if [ "$#" -eq 1 ]
+    if [ ! "$#" -eq 0 ]
     then
-	local DEV="$1"
-    else
 	ERROR_EXIT "called init_network with $# args: $@"
     fi
 
@@ -39,10 +37,14 @@ init_network() {
 auto lo
 iface lo inet loopback
 EOF
-    cat > /etc/network/interfaces.d/$DEV <<EOF
-auto $DEV
-iface $DEV inet dhcp
+
+    for dev in $(ls /sys/class/net | grep -E 'en[a-z0-9]+')
+    do
+	cat > /etc/network/interfaces.d/$dev <<EOF
+auto $dev
+iface $dev inet dhcp
 EOF
+    done
 }
 
 configure_locale() {
@@ -128,23 +130,27 @@ install_zfs() {
 	ERROR_EXIT "called install_zfs with $# args: $@"
     fi
 
-    case $RELEASE in
-	"8")
-	    cat /etc/apt/sources.list | grep -E '^deb .* jessie main$' | sed -e 's/jessie main$/jessie-backports main contrib/' > /etc/apt/sources.list.d/backports.list
-	    apt update
-	    apt install -y -t jessie-backports zfs-dkms zfs-initramfs
-	    modprobe zfs
-	    ;;
-	"9")
-	    sed -ire 's/stretch main$/stretch main contrib/' /etc/apt/sources.list
-	    apt update
-	    apt install -y zfs-dkms zfs-initramfs
-	    modprobe zfs
-	    ;;
-	*)
-	    ERROR_EXIT "Debian version $RELEASE is not supported!"
-	    ;;
-    esac
+    if [ $RELEASE -eq 8 ]
+    then
+	cat /etc/apt/sources.list | grep -E '^deb.* jessie main$' | sed -e 's/jessie main$/jessie-backports main contrib/' > /etc/apt/sources.list.d/backports.list
+	apt update
+	apt install -y -t jessie-backports zfs-dkms zfs-initramfs
+	modprobe zfs
+    elif [ $RELEASE -eq 10 ]
+    then
+	cat /etc/apt/sources.list | grep -E '^deb.* buster main$' | sed -e 's/buster main$/buster-backports main contrib/' > /etc/apt/sources.list.d/backports.list
+	apt update
+	apt install -y -t buster-backports zfs-dkms zfs-initramfs
+	modprobe zfs
+    elif [ $RELEASE -ge 9 ]
+    then
+	sed -ire 's/ ([^ ]+) main$/ \1 main contrib/' /etc/apt/sources.list
+	apt update
+	apt install -y zfs-dkms zfs-initramfs
+	modprobe zfs
+    else
+	ERROR_EXIT "Debian version $RELEASE is not supported!"
+    fi
 }
 
 init_sudouser() {
@@ -159,33 +165,80 @@ init_sudouser() {
     useradd -m -G sudo $SUDOUSER -s /bin/bash
     passwd $SUDOUSER
     passwd -l root
+    usermod -s /sbin/nologin root
+}
+
+install_kernel_zfs() {
+    if [ $# -eq 1 ]
+    then
+	local ARCH="$1"
+	local RELEASE="$(debian_version)"
+    else
+	ERROR_EXIT "called install_kernel_zfs with $# args: $@"
+    fi
+
+    if [ $RELEASE -eq 8 ]
+    then
+	apt install -y -t jessie-backports linux-image-$ARCH
+    elif [ $RELEASE -eq 10 ]
+    then
+	apt install -y -t buster-backports linux-image-$ARCH
+    elif [ $RELEASE -ge 9 ]
+    then
+	apt install -y linux-image-$ARCH
+    else
+	ERROR_EXIT "Debian version $RELEASE is not supported!"
+    fi
 }
 
 install_grub() {
-    if [ $# -eq 2 ]
+    if [ $# -eq 3 ]
     then
 	local BOOTDEV="$1"
 	local ARCH="$2"
+	local GRUB_MODULES="$3"
+    elif [ $# -eq 5 ]
+    then
+	local BOOTDEV="$1"
+	local ARCH="$2"
+	local GRUB_MODULES="$3"
+	local ZPOOL="$4"
+	local ROOTFS="$5"
     else
 	ERROR_EXIT "called install_grub with $# arguments: $@"
     fi
 
-    apt install -y cryptsetup linux-image-$ARCH
     DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
     cat >> /etc/default/grub <<EOF
-GRUB_CRYPTODISK_ENABLE=y
-GRUB_PRELOAD_MODULES="lvm cryptodisk"
-GRUB_CMDLINE_LINUX_DEFAULT=quite
+GRUB_PRELOAD_MODULES="$(echo $GRUB_MODULES|tr ',' ' ')"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet"
 GRUB_TERMINAL=console
 EOF
-    echo "Identifying root filesystem..."
-    if grub-probe / &> /dev/null
+
+    if echo $GRUB_MODULES | grep -qw cryptodisk
     then
+	cat >> /etc/default/grub <<EOF
+GRUB_CRYPTODISK_ENABLE=y
+EOF
+    fi
+
+    if [ ! -z $ZPOOL ]
+    then
+	cat >> /etc/default/grub <<EOF
+GRUB_CMDLINE_LINUX=root=ZFS=$ZPOOL/$ROOTFS
+EOF
+    fi
+
     grub-install $BOOTDEV
     update-initramfs -k all -u
     update-grub
-    else
-	ERROR_EXIT "grub could not identify root filesystem!"
+
+    if [ ! -z "$ZPOOL" ]
+    then
+	if ! ls /boot/grub/*/zfs.mod 2>&1 > /dev/null
+	then
+	    ERROR_EXIT "failed to install ZFS module for GRUB!"
+	fi
     fi
 }
 
@@ -344,7 +397,7 @@ cat >> /etc/hosts <<EOF
 EOF
 
 init_apt
-init_network ens3
+init_network
 apt update
 apt full-upgrade -y
 configure_locale $LOCALE
@@ -370,18 +423,48 @@ else
     passwd
 fi
 
+if [ ! -z "$ROOTDEV" ]
+then
+    apt install -y cryptsetup
+    GRUB_MODULES="cryptodisk"
+fi
+
 if [ ! -z "$ZPOOL" ]
 then
     echo "Installing ZFS..."
     install_zfs
+    GRUB_MODULES="$GRUB_MODULES${GRUB_MODULES:+,}zfs"
+    systemctl enable zfs-import-cache.service
+    systemctl enable zfs-import-cache.target
+    systemctl enable zfs-mount.service
+    systemctl enable zfs-mount.target
 elif [ "$SWAPFILES" -eq 0 ]
 then
     echo "Installing LVM binaries..."
     apt install -y lvm2
+    GRUB_MODULES="$GRUB_MODULES${GRUB_MODULES:+,}lvm"
+
+    ### Disable udev synchronization
+    if [ -e /etc/lvm/lvm.conf ]
+    then
+	mv /etc/lvm/lvm.conf /etc/lvm/lvm.conf.bak
+	cat /etc/lvm/lvm.conf.bak |\
+	    sed -re 's|(multipath_component_detection =) [0-9]+|\1 0|' |\
+	    sed -re 's|(md_component_detection =) [0-9]+|\1 0|' |\
+	    sed -re 's|(udev_sync =) [0-9]+|\1 0|' |\
+	    sed -re 's|(udev_rules =) [0-9]+|\1 0|' > /etc/lvm/lvm.conf
+    fi
 fi
 
 echo "Installing linux image and GRUB..."
-install_grub $BOOTDEV $ARCH
+if [ ! -z "$ZPOOL" ]
+then
+    install_kernel_zfs $ARCH
+    install_grub $BOOTDEV $ARCH $GRUB_MODULES $ZPOOL $ROOTFS
+else
+    apt install -y linux-image-$ARCH
+    install_grub $BOOTDEV $ARCH $GRUB_MODULES
+fi
 
 cat > FINISH.sh <<EOF
 #!/bin/sh
@@ -394,6 +477,7 @@ then
 umount $TARGET/boot
 zfs umount -a
 zfs set mountpoint=/ $ZPOOL/$ROOTFS
+zfs snapshot $ZPOOL/ROOTFS@install
 zpool export $ZPOOL
 echo Configured rootfs mountpoint and exported ZFS pool!
 EOF
