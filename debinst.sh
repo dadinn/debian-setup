@@ -35,14 +35,17 @@ bootstrap () {
     fi
 
     echo "Bootstrapping Debian release $RELEASE archictecture $ARCH..."
-    debootstrap --arch $ARCH --include lsb-release,dirmngr,ca-certificates,xz-utils,info $RELEASE $TARGET $MIRROR
+    if ! debootstrap --arch $ARCH --include lsb-release,dirmngr,ca-certificates,xz-utils,info $RELEASE $TARGET $MIRROR
+    then
+	ERROR_EXIT "Debootstrap installation failed!"
+    fi
 }
 
 # DEFAULTS
 
 RELEASE=${RELEASE:-buster}
 ARCH=${ARCH:-amd64}
-MIRROR=${MIRROR:-http://ftp.uk.debian.org/debian}
+MIRROR=${MIRROR:-http://deb.debian.org/debian}
 TARGET=${TARGET:-/mnt/instroot}
 
 usage () {
@@ -145,7 +148,7 @@ fi
 
 cp $(dirname "$0")/debconf.sh $TARGET
 
-for i in dev sys proc
+for i in dev sys proc run
 do
     [ -e $TARGET/$i ] || mkdir $TARGET/$i
     mount --rbind /$i $TARGET/$i
@@ -155,7 +158,7 @@ echo "Executing chroot command: ${CHROOT_COMMAND}..."
 LANG=C.UTF-8 ARCH=$ARCH \
 chroot $TARGET $CHROOT_COMMAND
 
-for i in dev sys proc
+for i in dev sys proc run
 do umount -Rlf $TARGET/$i; done
 
 if [ -e $TARGET/FINISH.sh ]

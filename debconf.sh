@@ -191,28 +191,19 @@ install_kernel_zfs() {
     fi
 }
 
-install_grub() {
-    if [ $# -eq 3 ]
+configure_grub() {
+    if [ $# -eq 2 ]
     then
-	local BOOTDEV="$1"
-	local ARCH="$2"
-	local GRUB_MODULES="$3"
-    elif [ $# -eq 5 ]
-    then
-	local BOOTDEV="$1"
-	local ARCH="$2"
-	local GRUB_MODULES="$3"
-	local ZPOOL="$4"
-	local ROOTFS="$5"
+	local GRUB_MODULES="$1"
+	local ZPOOL="$2"
     else
-	ERROR_EXIT "called install_grub with $# arguments: $@"
+	ERROR_EXIT "called configure_grub with $# args: $@"
     fi
 
-    DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
     cat >> /etc/default/grub <<EOF
-GRUB_PRELOAD_MODULES="$(echo $GRUB_MODULES|tr ',' ' ')"
 GRUB_CMDLINE_LINUX_DEFAULT="quiet"
-GRUB_TERMINAL=console
+GRUB_TERMINAL="console"
+GRUB_PRELOAD_MODULES="$(echo $GRUB_MODULES|tr ',' ' ')"
 EOF
 
     if echo $GRUB_MODULES | grep -qw cryptodisk
@@ -228,9 +219,44 @@ EOF
 GRUB_CMDLINE_LINUX=root=ZFS=$ZPOOL/$ROOTFS
 EOF
     fi
+}
 
-    grub-install $BOOTDEV
-    update-initramfs -k all -u
+install_grub() {
+    if [ $# -eq 4 ]
+    then
+	local BOOTDEV="$1"
+	local UEFIBOOT="$2"
+	local ARCH="$3"
+	local GRUB_MODULES="$4"
+    elif [ $# -eq 6 ]
+    then
+	local BOOTDEV="$1"
+	local UEFIBOOT="$2"
+	local ARCH="$3"
+	local GRUB_MODULES="$4"
+	local ZPOOL="$5"
+	local ROOTFS="$6"
+    else
+	ERROR_EXIT "called install_grub with $# arguments: $@"
+    fi
+
+    if [ $UEFIBOOT -eq 1 ]
+    then
+	DEBIAN_FRONTEND=noninteractive apt install -y grub-efi xz-utils
+	configure_grub "$GRUB_MODULES" "$ZPOOL"
+	grub-install \
+	    --target=x86_64-efi \
+	    --efi-directory=/boot/efi \
+	    --bootloader-id=debian \
+	    --compress=xz \
+	    --recheck \
+	    $BOOTDEV
+    else
+	DEBIAN_FRONTEND=noninteractive apt install -y grub-pc
+	configure_grub "$GRUB_MODULES" "$ZPOOL"
+	grub-install $BOOTDEV
+    fi
+
     update-grub
 
     if [ ! -z "$ZPOOL" ]
@@ -250,6 +276,7 @@ LOCALE="${LOCALE:-en_US.UTF-8}"
 TIMEZONE="${TIMEZONE:-Europe/London}"
 KEYMAP="${KEYMAP:-us:dvorak}"
 XKBOPTIONS="${XKBOPTIONS:-ctrl:nocaps}"
+UEFIBOOT="${UEFIBOOT:-0}"
 INSTALL_ZFS_ONLY=0
 
 usage() {
@@ -460,21 +487,31 @@ echo "Installing linux image and GRUB..."
 if [ ! -z "$ZPOOL" ]
 then
     install_kernel_zfs $ARCH
-    install_grub $BOOTDEV $ARCH $GRUB_MODULES $ZPOOL $ROOTFS
+    install_grub $BOOTDEV $UEFIBOOT $ARCH $GRUB_MODULES $ZPOOL $ROOTFS
 else
     apt install -y linux-image-$ARCH
-    install_grub $BOOTDEV $ARCH $GRUB_MODULES
+    install_grub $BOOTDEV $UEFIBOOT $ARCH $GRUB_MODULES
 fi
 
-cat > FINISH.sh <<EOF
+cat >> FINISH.sh <<EOF
 #!/bin/sh
 
+EOF
+
+if [ $UEFIBOOT -eq 1 ]
+then
+    cat >> FINISH.sh <<EOF
+umount $TARGET/boot/efi
+EOF
+fi
+
+cat >> FINISH.sh <<EOF
+umount $TARGET/boot
 EOF
 
 if [ ! -z "$ZPOOL" ]
 then
     cat >> FINISH.sh <<EOF
-umount $TARGET/boot
 zfs umount -a
 zfs set mountpoint=/ $ZPOOL/$ROOTFS
 zfs snapshot $ZPOOL/ROOTFS@install
@@ -483,7 +520,6 @@ echo Configured rootfs mountpoint and exported ZFS pool!
 EOF
 else
     cat >> FINISH.sh <<EOF
-umount $TARGET/boot
 umount $TARGET
 echo Unmounted $TARGET!
 EOF
