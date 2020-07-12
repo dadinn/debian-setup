@@ -498,6 +498,13 @@ cat >> FINISH.sh <<EOF
 
 EOF
 
+if [ $UEFIBOOT -eq 1 ]
+then
+    cat >> FINISH.sh <<EOF
+umount $TARGET/boot/efi
+EOF
+fi
+
 cat >> FINISH.sh <<EOF
 umount $TARGET/boot
 EOF
