@@ -493,15 +493,18 @@ else
     install_grub $BOOTDEV $UEFIBOOT $ARCH $GRUB_MODULES
 fi
 
-cat > FINISH.sh <<EOF
+cat >> FINISH.sh <<EOF
 #!/bin/sh
 
+EOF
+
+cat >> FINISH.sh <<EOF
+umount $TARGET/boot
 EOF
 
 if [ ! -z "$ZPOOL" ]
 then
     cat >> FINISH.sh <<EOF
-umount $TARGET/boot
 zfs umount -a
 zfs set mountpoint=/ $ZPOOL/$ROOTFS
 zfs snapshot $ZPOOL/ROOTFS@install
@@ -510,7 +513,6 @@ echo Configured rootfs mountpoint and exported ZFS pool!
 EOF
 else
     cat >> FINISH.sh <<EOF
-umount $TARGET/boot
 umount $TARGET
 echo Unmounted $TARGET!
 EOF
